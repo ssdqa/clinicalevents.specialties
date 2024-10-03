@@ -3,7 +3,7 @@
 \docType{data}
 \name{cnc_sp_specialty_names}
 \alias{cnc_sp_specialty_names}
-\title{Clinical Facts & Specialties - Specialty Naming Sample}
+\title{Clinical Events & Specialties - Specialty Naming Sample}
 \format{
 \subsection{\code{cnc_sp_specialty_names}}{
 

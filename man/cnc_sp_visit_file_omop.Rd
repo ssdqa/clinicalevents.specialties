@@ -3,7 +3,7 @@
 \docType{data}
 \name{cnc_sp_visit_file_omop}
 \alias{cnc_sp_visit_file_omop}
-\title{Clinical Facts & Specialties Visit File Sample -- OMOP version}
+\title{Clinical Events & Specialties Visit File Sample -- OMOP version}
 \format{
 \subsection{cnc_sp_visit_file_omop}{
 

@@ -3,7 +3,7 @@
 \docType{data}
 \name{cnc_sp_codeset_file}
 \alias{cnc_sp_codeset_file}
-\title{Clinical Facts & Specialties Codeset File Sample}
+\title{Clinical Events & Specialties Codeset File Sample}
 \format{
 \subsection{\code{cnc_sp_codeset_file}}{
 
