@@ -1,9 +1,9 @@
 Package: clinicalevents.specialties
-Title: Concordance of Clinical Events and Specialties
+Title: Clinical Events and Specialties
 Version: 0.0.0.9000
 Authors@R: 
     person("Kaleigh", "Wieand", , "wieandk@chop.edu", role = c("aut", "cre"))
-Description: This package represents one of several modules in the broader SSDQA ecosystem. The Concordance of Clinical Facts and Specialties module identifies specialties associated with a user-provided clinical fact (i.e. a diagnosis) and evaluates the distribution of specialty types.
+Description: This package represents one of several modules in the broader SSDQA ecosystem. The Clinical Facts and Specialties module identifies specialties associated with a user-provided clinical fact (i.e. a diagnosis) and evaluates the distribution of specialty types.
 License: Artistic-2.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
