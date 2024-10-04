@@ -571,7 +571,7 @@ cnc_sp_ms_anom_nt<-function(process_output,
     labs(y = "Specialty",
          x = 'Site',
          size="",
-         title=paste0('Anomalous Variables per ', title, ' by Site')) +
+         title=paste0('Anomalous Proportion of Visits per ', title, ' by Site')) +
     guides(color = guide_colorbar(title = 'Proportion'),
            shape = guide_legend(title = 'Anomaly'),
            size = 'none')
