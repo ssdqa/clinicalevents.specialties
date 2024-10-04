@@ -263,7 +263,7 @@ cnc_sp_ss_anom_nt<- function(data_tbl,
 
   #mid <- median(dat_to_plot$prop, na.rm=TRUE)
 
-  plt<-ggplot(dat_to_plot %>% filter(anomaly_yn != 'no outlier in group'),
+  plt<-ggplot(dat_to_plot, #%>% filter(anomaly_yn != 'no outlier in group'),
               aes(x=specialty_name, y=cluster, text=text, color=prop))+
     geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
     geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
@@ -558,7 +558,7 @@ cnc_sp_ms_anom_nt<-function(process_output,
                       "\nMAD: ", round(mad_val,2)))
 
 
-  plt<-ggplot(dat_to_plot %>% filter(anomaly_yn != 'no outlier in group'),
+  plt<-ggplot(dat_to_plot, #%>% filter(anomaly_yn != 'no outlier in group'),
               aes(x=site, y=specialty_name, text=text, color=prop))+
     geom_point_interactive(aes(size=mad_val,shape=anomaly_yn, tooltip = text))+
     scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
