@@ -253,41 +253,41 @@ cnc_sp_ms_exp_at <- function(data_tbl,
 cnc_sp_ss_anom_nt<- function(data_tbl,
                              facet = NULL){
 
+
   dat_to_plot <- data_tbl %>%
     mutate(text=paste("Specialty: ",specialty_name,
                       "\nProportion: ",round(prop,2),
                       "\nMean proportion:",round(mean_val,2),
                       '\nSD: ', round(sd_val,2),
                       "\nMedian proportion: ",round(median_val,2),
-                      "\nMAD: ", round(mad_val,2)))
+                      "\nMAD: ", round(mad_val,2))) %>%
+    mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
+                               'not outlier', anomaly_yn))
 
-  #mid <- median(dat_to_plot$prop, na.rm=TRUE)
+    plt<-ggplot(dat_to_plot, #%>% filter(anomaly_yn != 'no outlier in group'),
+                aes(x=specialty_name, y=cluster, text=text, color=prop))+
+      geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
+      geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
+                             aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
+      scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
+      scale_shape_manual(values=c(19,8))+
+      scale_y_discrete(labels = function(x) str_wrap(x, width = 60)) +
+      theme_minimal() +
+      facet_wrap((facet)) +
+      #theme(axis.text.x = element_text(angle=60, hjust = 1)) +
+      labs(size="",
+           title=paste0('Anomalous Proportion of Visits with Specialty per Cluster'),
+           subtitle = 'Dot size is the mean proportion per domain',
+           y = 'Cluster',
+           x = 'Specialty') +
+      guides(color = guide_colorbar(title = 'Proportion'),
+             shape = guide_legend(title = 'Anomaly'),
+             size = 'none')
 
-  plt<-ggplot(dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
-                                                     'not outlier', anomaly_yn)), #%>% filter(anomaly_yn != 'no outlier in group'),
-              aes(x=specialty_name, y=cluster, text=text, color=prop))+
-    geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
-    geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
-                           aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
-    scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
-    scale_shape_manual(values=c(19,8))+
-    scale_y_discrete(labels = function(x) str_wrap(x, width = 60)) +
-    theme_minimal() +
-    facet_wrap((facet)) +
-    #theme(axis.text.x = element_text(angle=60, hjust = 1)) +
-    labs(size="",
-         title=paste0('Anomalous Proportion of Visits with Specialty per Cluster'),
-         subtitle = 'Dot size is the mean proportion per domain',
-         y = 'Cluster',
-         x = 'Specialty') +
-    guides(color = guide_colorbar(title = 'Proportion'),
-           shape = guide_legend(title = 'Anomaly'),
-           size = 'none')
+    plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                'tooltip' = TRUE)
 
-  plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
-                              'tooltip' = TRUE)
-
-  return(plt)
+    return(plt)
 
 }
 
@@ -549,6 +549,8 @@ cnc_sp_ms_anom_nt<-function(process_output,
 
   cli::cli_div(theme = list(span.code = list(color = 'blue')))
 
+  check_n <- process_output %>%
+    filter(anomaly_yn != 'no outlier in group')
 
   dat_to_plot <- process_output %>%
     mutate(text=paste("Specialty: ",specialty_name,
@@ -558,26 +560,72 @@ cnc_sp_ms_anom_nt<-function(process_output,
                       "\nMedian proportion: ",round(median_val,2),
                       "\nMAD: ", round(mad_val,2)))
 
+  if(nrow(check_n) > 0){
 
-  plt<-ggplot(dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
-                                                         'not outlier', anomaly_yn)),
-              aes(x=site, y=specialty_name, text=text, color=prop))+
-    geom_point_interactive(aes(size=mad_val,shape=anomaly_yn, tooltip = text))+
-    scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
-    scale_shape_manual(values=c(20,8))+
-    scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
-    theme_minimal() +
-    #theme(axis.text.x = element_text(angle=60)) +
-    labs(y = "Specialty",
-         x = 'Site',
-         size="",
-         title=paste0('Anomalous Proportion of Visits per ', title, ' by Site')) +
-    guides(color = guide_colorbar(title = 'Proportion'),
-           shape = guide_legend(title = 'Anomaly'),
-           size = 'none')
+    plt<-ggplot(dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
+                                                           'not outlier', anomaly_yn)),
+                aes(x=site, y=specialty_name, text=text, color=prop))+
+      geom_point_interactive(aes(size=mad_val,shape=anomaly_yn, tooltip = text))+
+      scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
+      scale_shape_manual(values=c(20,8))+
+      scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
+      theme_minimal() +
+      #theme(axis.text.x = element_text(angle=60)) +
+      labs(y = "Specialty",
+           x = 'Site',
+           size="",
+           title=paste0('Anomalous Proportion of Visits per ', title, ' by Site')) +
+      guides(color = guide_colorbar(title = 'Proportion'),
+             shape = guide_legend(title = 'Anomaly'),
+             size = 'none')
 
-  plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
-                              'tooltip' = TRUE)
+    plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                'tooltip' = TRUE)
 
-  return(plt)
+    return(plt)
+
+  }else{
+
+    plt <- ggplot(dat_to_plot, aes(x = site, y = specialty_name, fill = prop,
+                                   tooltip = text)) +
+      geom_tile_interactive() +
+      theme_minimal() +
+      scale_fill_ssdqa(discrete = FALSE, palette = 'diverging') +
+      labs(y = 'Specialty',
+           x = 'Site',
+           fill = 'Proportion')
+
+    # Test Site Score using SD Computation
+    test_site_score <- process_output %>%
+      mutate(dist_mean = (prop - mean_val)^2) %>%
+      group_by(site) %>%
+      summarise(n_grp = n(),
+                dist_mean_sum = sum(dist_mean),
+                overall_sd = sqrt(dist_mean_sum / n_grp)) %>%
+      mutate(tooltip = paste0('Site: ', site,
+                              '\nStandard Deviation: ', round(overall_sd, 3)))
+
+    ylim_max <- test_site_score %>% filter(overall_sd == max(overall_sd)) %>% pull(overall_sd) + 1
+    ylim_min <- test_site_score %>% filter(overall_sd == min(overall_sd)) %>% pull(overall_sd) - 1
+
+    g2 <- ggplot(test_site_score, aes(y = overall_sd, x = site, color = site,
+                                      tooltip = tooltip)) +
+      geom_point_interactive(show.legend = FALSE) +
+      theme_minimal() +
+      scale_color_ssdqa() +
+      geom_hline(yintercept = 0, linetype = 'solid') +
+      labs(title = 'Average Standard Deviation per Site',
+           y = 'Average Standard Deviation',
+           x = 'Site')
+
+    plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                'tooltip' = TRUE)
+    g2[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                               'tooltip' = TRUE)
+
+    opt <- list(plt,
+                g2)
+
+    return(opt)
+  }
 }
