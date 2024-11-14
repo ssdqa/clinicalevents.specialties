@@ -186,7 +186,9 @@ find_fact_spec_conc <- function(cohort,
       mutate(specialty_concept_id=case_when(!is.na(specialty_concept_id_pv)~specialty_concept_id_pv,
                                             !is.na(specialty_concept_id_cs)~specialty_concept_id_cs,
                                             TRUE~NA_integer_))%>%
-      select(-c(specialty_concept_id_pv,specialty_concept_id_cs))
+      select(-c(specialty_concept_id_pv,specialty_concept_id_cs)) %>%
+      select(visit_occurrence_id, visit_concept_id, specialty_concept_id) %>%
+      distinct() %>% compute_new()
 
   }else if(provider&!care_site){
     spec_full <- visits %>%
