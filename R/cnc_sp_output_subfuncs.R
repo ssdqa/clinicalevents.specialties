@@ -448,7 +448,7 @@ cnc_sp_ms_anom_at <- function(process_output,
 
   allsites <-
     filt_op %>%
-    select(!!!syms(grp_vars), !!sym(facet))%>%#time_start,concept_id,mean_allsiteprop)
+    select(grp_vars, facet)%>%#time_start,concept_id,mean_allsiteprop)
     distinct() %>%
     rename(prop=mean_allsiteprop) %>%
     mutate(site='all site average') %>%
@@ -561,10 +561,14 @@ cnc_sp_ms_anom_nt<-function(process_output,
 
   if(nrow(check_n) > 0){
 
-    plt<-ggplot(dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
-                                                           'not outlier', anomaly_yn)),
+    dat_to_plot <- dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
+                                                              'not outlier', anomaly_yn))
+
+    plt<-ggplot(dat_to_plot,
                 aes(x=site, y=specialty_name, text=text, color=prop))+
       geom_point_interactive(aes(size=mad_val,shape=anomaly_yn, tooltip = text))+
+      geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
+                             aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
       scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
       scale_shape_manual(values=c(20,8))+
       scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +

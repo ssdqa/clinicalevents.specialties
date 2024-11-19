@@ -75,7 +75,7 @@ compute_conc_omop <- function(cohort,
       visit_specs <- visit_specs %>%
         collect() %>%
         inner_join(new_person %>% select(person_id, birth_date)) %>%
-        mutate(visit_age=(visit_start_date-birth_date)/365.25)%>%
+        mutate(visit_age=as.numeric((visit_start_date-birth_date)/365.25)) %>%
         merge(age_gp_tbl) %>%
         mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
                                    TRUE ~ as.character(NA)))%>%

@@ -75,7 +75,7 @@ compute_conc_pcnt <- function(cohort,
         inner_join(select(cdm_tbl('demographic'), c(patid, birth_date)),
                    by='patid')%>%
         collect() %>%
-        mutate(visit_age=(admit_date-birth_date)/365.25)%>%
+        mutate(visit_age=as.numeric((admit_date-birth_date)/365.25)) %>%
         merge(age_gp_tbl) %>%
         mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
                                    TRUE ~ as.character(NA)))%>%
