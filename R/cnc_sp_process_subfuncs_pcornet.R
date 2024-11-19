@@ -178,7 +178,7 @@ find_fact_spec_conc_pcnt <- function(cohort,
     pv_spec <-  visits %>% select(encounterid, enc_type, admit_date, providerid)%>%
       inner_join(select(fact_occurrences, encounterid))%>%
       left_join(select(cdm_tbl('provider'),c(providerid, provider_specialty_primary)),
-                by = 'provider_id')%>%
+                by = 'providerid')%>%
       rename(specialty_concept_id_pv=provider_specialty_primary) %>%
       select(encounterid,enc_type,admit_date,specialty_concept_id_pv)
 
@@ -205,7 +205,7 @@ find_fact_spec_conc_pcnt <- function(cohort,
       select(encounterid, enc_type, admit_date,providerid)%>%
       inner_join(select(fact_occurrences, encounterid))%>%
       left_join(select(cdm_tbl('provider'),c(providerid, provider_specialty_primary)),
-                by = 'provider_id') %>%
+                by = 'providerid') %>%
       rename(specialty_concept_id=provider_specialty_primary) %>%
       distinct() %>% compute_new()
   }else if(care_site&!provider){
