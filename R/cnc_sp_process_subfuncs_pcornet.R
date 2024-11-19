@@ -67,28 +67,30 @@ compute_conc_pcnt <- function(cohort,
                                             fact_tbl=domain_tbl_use,
                                             care_site=care_site,
                                             provider=provider,
+                                            vocabulary_field = codeset_list[[i]]$vocabulary_field,
                                             time=time)
-    # if(is.data.frame(age_gp_tbl)){
-    #
-    #   visit_specs <- visit_specs %>%
-    #     inner_join(select(cdm_tbl('person'), c(person_id, birth_date)),
-    #                by='person_id')%>%
-    #     mutate(visit_age=(visit_start_date-birth_date)/365.25)%>%
-    #     merge(age_gp_tbl) %>%
-    #     mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
-    #                                TRUE ~ as.character(NA)))%>%
-    #     filter(!is.na(age_grp))%>%
-    #     select(-c(birth_date, min_age, max_age, group))
-    # }
+    if(!is.null(age_gp_tbl)){
+
+      visit_specs <- visit_specs %>%
+        inner_join(select(cdm_tbl('demographic'), c(patid, birth_date)),
+                   by='patid')%>%
+        collect() %>%
+        mutate(visit_age=(admit_date-birth_date)/365.25)%>%
+        merge(age_gp_tbl) %>%
+        mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
+                                   TRUE ~ as.character(NA)))%>%
+        filter(!is.na(age_grp))%>%
+        select(-c(birth_date, min_age, max_age, group))
+    }
 
     # calculate the concordance per the grouping parameters
     conc_prop<- visit_specs %>%
       group_by(!!!syms(grp_spec))%>%
       summarise(num_visits=n_distinct(encounterid)) %>%
       ungroup()%>%
-      mutate(codeset_name=codeset_name)
+      mutate(codeset_name=codeset_name) %>% collect()
 
-    if(is.data.frame(visit_type_tbl)){
+    if(!is.null(visit_type_tbl)){
       grp_vis_type <- grp_spec[!grp_spec=='enc_type']
       grp_vis_type <- grp_vis_type %>% append(c('visit_type','codeset_name'))
 
@@ -129,20 +131,30 @@ find_fact_spec_conc_pcnt <- function(cohort,
                                      fact_tbl,
                                      care_site,
                                      provider,
+                                     vocabulary_field,
                                      time=FALSE){
 
   if(!'cluster'%in%colnames(fact_codes)){fact_codes<-fact_codes%>%mutate(cluster=concept_name)}
   if(!'category'%in%colnames(fact_codes)){fact_codes<-fact_codes%>%mutate(category='all')}
 
   message('Finding code occurrences')
+
+  join_cols <- 'concept_code'
+
+  if(!is.na(vocabulary_field)){
+   join_cols2 <- purrr::set_names('vocabulary_id', vocabulary_field)
+   join_cols <- join_cols %>% append(join_cols2)
+  }
+
   fact_occurrences <-
-    fact_tbl %>% select(patid, encounterid, concept_code)%>%
+    fact_tbl %>% select(patid, encounterid, concept_code, !!sym(vocabulary_field))%>%
     inner_join(cohort) %>%
     # select(person_id, concept_id,
     #        visit_occurrence_id, site) %>%
     inner_join(select(fact_codes,
                       concept_code, concept_name,
-                      category, cluster)) %>%
+                      vocabulary_id,
+                      category, cluster), by = join_cols) %>%
     compute_new(temporary=TRUE)
 
   message('Finding specialties')

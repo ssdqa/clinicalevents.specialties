@@ -30,6 +30,7 @@
 #'   \item{domain_tbl}{The name of the CDM table where the variable can be found}
 #'   \item{concept_field}{The field in the default_tbl that should be used to join to the codeset}
 #'   \item{date_field}{The date field in the default_tbl that should be used to filter the dataset to the cohort period and for longitudinal analyses}
+#'   \item{vocabulary_field}{(PCORnet only) The name of the column in the domain table where the vocabulary type is stored}
 #'   \item{codeset_name}{The name of the codeset as found in the specs directory; file extension should not be included}
 #' }
 #'

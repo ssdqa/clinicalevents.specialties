@@ -73,7 +73,7 @@ cnc_sp_process_omop <- function(cohort,
   site_list_adj <- site_filter$site_list_adj
 
   ## Step 1: Prepare cohort
-  cohort_prep <- prepare_cohort(cohort_tbl = cohort_filter, age_groups = age_groups, codeset = NULL)
+  cohort_prep <- prepare_cohort(cohort_tbl = cohort_filter, age_groups = NULL, codeset = NULL)
 
   ## Include age groups, if desired
   if(is.data.frame(age_groups)){

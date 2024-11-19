@@ -67,27 +67,30 @@ compute_conc_omop <- function(cohort,
                                             care_site=care_site,
                                             provider=provider,
                                             time=time)
-    # if(is.data.frame(age_gp_tbl)){
-    #
-    #   visit_specs <- visit_specs %>%
-    #     inner_join(select(cdm_tbl('person'), c(person_id, birth_date)),
-    #                by='person_id')%>%
-    #     mutate(visit_age=(visit_start_date-birth_date)/365.25)%>%
-    #     merge(age_gp_tbl) %>%
-    #     mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
-    #                                TRUE ~ as.character(NA)))%>%
-    #     filter(!is.na(age_grp))%>%
-    #     select(-c(birth_date, min_age, max_age, group))
-    # }
+    if(!is.null(age_gp_tbl)){
+
+      new_person <- build_birth_date(cohort = cohort,
+                                     person_tbl = cdm_tbl('person'))
+
+      visit_specs <- visit_specs %>%
+        collect() %>%
+        inner_join(new_person %>% select(person_id, birth_date)) %>%
+        mutate(visit_age=(visit_start_date-birth_date)/365.25)%>%
+        merge(age_gp_tbl) %>%
+        mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
+                                   TRUE ~ as.character(NA)))%>%
+        filter(!is.na(age_grp))%>%
+        select(-c(birth_date, min_age, max_age, group))
+    }
 
     # calculate the concordance per the grouping parameters
     conc_prop<- visit_specs %>%
       group_by(!!!syms(grp_spec))%>%
       summarise(num_visits=n_distinct(visit_occurrence_id)) %>%
       ungroup()%>%
-      mutate(codeset_name=codeset_name)
+      mutate(codeset_name=codeset_name) %>% collect()
 
-    if(is.data.frame(visit_type_tbl)){
+    if(!is.null(visit_type_tbl)){
       grp_vis_type <- grp_spec[!grp_spec=='visit_concept_id']
       grp_vis_type <- grp_vis_type %>% append(c('visit_type','codeset_name'))
 
@@ -95,7 +98,7 @@ compute_conc_omop <- function(cohort,
 
       conc_prop <- conc_prop %>%
         filter(visit_concept_id %in% visit_type_vec) %>%
-        left_join(visit_type_tbl, by = 'visit_concept_id', copy=TRUE) %>%
+        left_join(visit_type_tbl, by = 'visit_concept_id') %>%
         group_by(!!!syms(grp_vis_type)) %>%
         summarise(num_visits=sum(num_visits, na.rm=TRUE)) %>%
         ungroup()
@@ -142,9 +145,7 @@ find_fact_spec_conc_omop <- function(cohort,
     inner_join(select(fact_codes,
                       concept_id, concept_name,
                       category, cluster)) %>%
-    compute_new(temporary=TRUE,
-                indexes=list('person_id',
-                             'visit_occurrence_id'))
+    compute_new(temporary=TRUE)
 
   message('Finding specialties')
   if(time){

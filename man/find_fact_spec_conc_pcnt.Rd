@@ -11,6 +11,7 @@ find_fact_spec_conc_pcnt(
   fact_tbl,
   care_site,
   provider,
+  vocabulary_field,
   time = FALSE
 )
 }
