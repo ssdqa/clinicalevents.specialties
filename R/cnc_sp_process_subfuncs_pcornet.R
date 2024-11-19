@@ -122,6 +122,8 @@ compute_conc_pcnt <- function(cohort,
 #' @param fact_tbl cdm_tbl in which to search for fact_codes
 #' @param care_site boolean indicating whether to search care_site (at visit level) for specialty
 #' @param provider boolean indicating whether to search provider (at visit level) for specialty
+#' @param vocabulary_field name of the field in the fact_tbl that indicates the vocabulary type of the
+#' codes
 #' @param time boolean indicating whether the analysis should be conducted longitudinally
 #'
 #' @return table with all occurrences of the fact_codes for the cohort, and visit info only

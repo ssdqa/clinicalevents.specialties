@@ -26,6 +26,9 @@ find_fact_spec_conc_pcnt(
 
 \item{provider}{boolean indicating whether to search provider (at visit level) for specialty}
 
+\item{vocabulary_field}{name of the field in the fact_tbl that indicates the vocabulary type of the
+codes}
+
 \item{time}{boolean indicating whether the analysis should be conducted longitudinally}
 }
 \value{
