@@ -197,13 +197,15 @@ find_fact_spec_conc_omop <- function(cohort,
       select(visit_occurrence_id, visit_concept_id, visit_start_date, provider_id)%>%
       inner_join(select(fact_occurrences, visit_occurrence_id))%>%
       left_join(select(cdm_tbl('provider'),c(provider_id, specialty_concept_id)),
-                by = 'provider_id')
+                by = 'provider_id') %>%
+      distinct() %>% compute_new()
   }else if(care_site&!provider){
     spec_full <- visits %>%
       select(visit_occurrence_id, visit_concept_id, visit_start_date, care_site_id)%>%
       inner_join(select(fact_occurrences, visit_occurrence_id))%>%
       left_join(select(cdm_tbl('care_site'),c(care_site_id, specialty_concept_id)),
-                by = 'care_site_id')
+                by = 'care_site_id') %>%
+      distinct() %>% compute_new()
   }
 
   spec_final <-
