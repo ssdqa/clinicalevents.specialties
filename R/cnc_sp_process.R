@@ -68,9 +68,9 @@ cnc_sp_process <- function(cohort,
                            multi_or_single_site='multi',
                            omop_or_pcornet,
                            age_groups=NULL,
-                           codeset_tbl=NULL,
-                           care_site,
-                           provider,
+                           codeset_tbl,
+                           care_site=FALSE,
+                           provider=TRUE,
                            visit_type_tbl=NULL,
                            time=FALSE,
                            time_span=c('2012-01-01', '2020-01-01'),
@@ -83,6 +83,7 @@ cnc_sp_process <- function(cohort,
 
   if(!multi_or_single_site %in% c('single', 'multi')){cli::cli_abort('Invalid argument for {.code multi_or_single_site}: please enter either {.code multi} or {.code single}')}
   # if(!anomaly_or_exploratory %in% c('anomaly', 'exploratory')){cli::cli_abort('Invalid argument for {.code anomaly_or_exploratory}: please enter either {.code anomaly} or {.code exploratory}')}
+  if(!provider && !care_site){cli::cli_abort('Please set at least one of {.code provider} or {.care_site} to TRUE')}
 
   ## parameter summary output
   output_type <- suppressWarnings(param_summ(check_string = 'cnc_sp',
@@ -121,8 +122,8 @@ cnc_sp_process <- function(cohort,
   }else{cli::cli_abort('Invalid argument for {.code omop_or_pcornet}: this function is only compatible with {.code omop} or {.code pcornet}')}
 
 
-  cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
-                       output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
+  # cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
+  #                      output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
 
   return(cnc_sp_rslt)
 

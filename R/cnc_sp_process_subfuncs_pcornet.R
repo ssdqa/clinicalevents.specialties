@@ -175,19 +175,19 @@ find_fact_spec_conc_pcnt <- function(cohort,
 
 
   if(care_site&provider){
-    pv_spec <-  visits %>% select(encounterid, enc_type, providerid)%>%
+    pv_spec <-  visits %>% select(encounterid, enc_type, admit_date, providerid)%>%
       inner_join(select(fact_occurrences, encounterid))%>%
       left_join(select(cdm_tbl('provider'),c(providerid, provider_specialty_primary)),
                 by = 'provider_id')%>%
       rename(specialty_concept_id_pv=provider_specialty_primary) %>%
-      select(encounterid,enc_type,specialty_concept_id_pv)
+      select(encounterid,enc_type,admit_date,specialty_concept_id_pv)
 
-    cs_spec <- visits %>% select(encounterid, enc_type, facility_type)%>%
+    cs_spec <- visits %>% select(encounterid, enc_type, admit_date,facility_type)%>%
       inner_join(select(fact_occurrences,encounterid))%>%
       # left_join(select(cdm_tbl('care_site'),c(care_site_id, specialty_concept_id)),
       #           by = 'care_site_id')%>%
       rename(specialty_concept_id_cs=facility_type)%>%
-      select(encounterid,enc_type,specialty_concept_id_cs)
+      select(encounterid,enc_type,admit_date,specialty_concept_id_cs)
 
     spec_full <-
       visits %>%
@@ -197,19 +197,19 @@ find_fact_spec_conc_pcnt <- function(cohort,
                                             !is.na(specialty_concept_id_cs)~specialty_concept_id_cs,
                                             TRUE~NA_integer_))%>%
       select(-c(specialty_concept_id_pv,specialty_concept_id_cs)) %>%
-      select(encounterid, enc_type, specialty_concept_id) %>%
+      select(encounterid, enc_type, admit_date,specialty_concept_id) %>%
       distinct() %>% compute_new()
 
   }else if(provider&!care_site){
     spec_full <- visits %>%
-      select(encounterid, enc_type, providerid)%>%
+      select(encounterid, enc_type, admit_date,providerid)%>%
       inner_join(select(fact_occurrences, encounterid))%>%
       left_join(select(cdm_tbl('provider'),c(providerid, provider_specialty_primary)),
                 by = 'provider_id') %>%
       rename(specialty_concept_id=provider_specialty_primary)
   }else if(care_site&!provider){
     spec_full <- visits %>%
-      select(encounterid, enc_type, facility_type)%>%
+      select(encounterid, enc_type, admit_date,facility_type)%>%
       inner_join(select(fact_occurrences, encounterid))%>%
       rename(specialty_concept_id = facility_type)
   }
@@ -224,30 +224,4 @@ find_fact_spec_conc_pcnt <- function(cohort,
 
   return(spec_final)
 
-}
-
-#' Function to generate a table of concept_id + concept_name for a set of concepts
-#'
-#' @param tbl table with a specialty_concept_id column
-#' @param concept_col the column in the vocabulary table that should be used to join to
-#' the input tbl
-#' @param vocab table with a concept_id and concept_name column, defaulting to the
-#'              vocabulary_tbl `concept`
-#'
-#' @return table with distinct specialty_concept_id | concept_name
-#'
-#' @importFrom purrr set_names
-#'
-find_distinct_concepts <- function(tbl,
-                                   concept_col = 'concept_id',
-                                   vocab=vocabulary_tbl('concept')){
-
-  tbl_distinct <- tbl %>% distinct(specialty_concept_id)
-
-  join_cols <- purrr::set_names(concept_col, 'specialty_concept_id')
-
-  vocab%>%select(!!sym(concept_col), concept_name)%>%
-    inner_join(tbl_distinct, by = join_cols, copy=TRUE)%>%
-    rename(specialty_concept_id=concept_id,
-           specialty_concept_name=concept_name)
 }
