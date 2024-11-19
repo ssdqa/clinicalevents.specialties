@@ -183,7 +183,6 @@ cnc_sp_ss_exp_at <- function(data_tbl,
 #' * Multi-Site, Exploratory, Across Time*
 #' Function to produce output for clinical event concordance with specialty
 #'      for multi site, exploratory, across time
-
 #' @param data_tbl table which must contain the cols: time_start | codeset_name | specialty_name | site
 #' @param facet if supplied, variable to facet the plot by
 #' @return line plot, with time on x axis, proportion on y, line color determined by site

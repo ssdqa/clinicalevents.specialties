@@ -1,3 +1,5 @@
-^clinicalfacts\.specialties\.Rproj$
+^clinicalevents\.specialties\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
+^LICENSE.txt
+^.github

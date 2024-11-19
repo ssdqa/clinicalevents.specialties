@@ -8,28 +8,31 @@
 #' @param cohort - A dataframe with the cohort of patients for your study. Should include the columns:
 #'          `site` | `person_id` | `start_date` | `end_date`
 #' @param multi_or_single_site Option to run the function on a single vs multiple sites
-#'                      - 'single': run on a single site, or treat all of the sites as one
-#'                      - 'multi': run on a group of sites, treating each site separately
-#' @param age_groups If you would like to stratify the results by age group, fill out a CSV file or create a local dataframe
-#'                     with the following information:
-#'                     - @min_age: the minimum age for the group (i.e. 10)
-#'                     - @max_age: the maximum age for the group (i.e. 20)
-#'                     - @group: a string label for the group (i.e. 10-20, Young Adult, etc.)
+#'                      - `single`: run on a single site, or treat all of the sites as one
+#'                      - `multi`: run on a group of sites, treating each site separately
+#' @param omop_or_pcornet Option to run the function using the OMOP or PCORnet CDM as the default CDM
+#' - `omop`: run the [cnc_sp_process_omop()] function against an OMOP CDM instance
+#' - `pcornet`: run the [cnc_sp_process_pcornet()] function against a PCORnet CDM instance
+#' @param age_groups If you would like to stratify the results by age group,  create a table or CSV file with the following
+#'                   columns and include it as the `age_groups` function parameter:
+#' - `min_age`: the minimum age for the group (i.e. 10)
+#' - `max_age`: the maximum age for the group (i.e. 20)
+#' - `group`: a string label for the group (i.e. 10-20, Young Adult, etc.)
 #'
-#'                     Then supply this table as the age_groups argument (i.e. read.csv('path/to/age_group_definitions.csv'))
+#' If you would *not* like to stratify by age group, leave the argument as NULL
 #' @param codeset_tbl table in the specs directory with the columns:
-#'                    - domain: name of the domain
-#'                    - domain_tbl: name of the cdm_tbl
-#'                    - concept_field: column name in the domain_tbl for which to search the codeset concept_ids
-#'                    - date_field: column name in the domain_tbl to be used for time-based filtering
-#'                    - codeset_name: name of a codeset that exists as a csv file in the specs directory. The codeset can optionally contain a `cluster` column specifying subgroups of the codeset, and if so, the results will be stratified by cluster
+#' - domain: name of the domain
+#' - domain_tbl: name of the cdm_tbl
+#' - concept_field: column name in the domain_tbl for which to search the codeset concept_ids
+#' - date_field: column name in the domain_tbl to be used for time-based filtering
+#' - codeset_name: name of a codeset that exists as a csv file in the specs directory. The codeset can optionally contain a `cluster` column specifying subgroups of the codeset, and if so, the results will be stratified by cluster
 #' @param care_site TRUE if want to look at care_site specialty
 #'                  FALSE if do not want to look at care_site specialty
 #' @param provider TRUE if want to look at provider specialty
 #'                  FALSE if do not want to look at provider specialty
 #'                  IF both `provider` and `care_site` are both TRUE,
 #'                        provider specialty will be prioritized if provider and care_site are discordant for the visit
-#' @param visit_type_tbl - a csv file that defines available visit types that are called in @visit_types. defaults to the provided
+#' @param visit_type_tbl - a csv file that defines available visit types that are called in `visit_types.` defaults to the provided
 #'                           `conc_visit_types.csv` file, which contains the following fields:
 #'                           - visit_concept_id: the visit_concept_id that represents the visit type of interest (i.e. 9201)
 #'                           - visit_type: the string label to describe the visit type; this label can be used multiple times
@@ -50,7 +53,6 @@
 #'            1 table containing counts of visits, optionally stratified by visit and/or time period,
 #'            with each specialty for the visits meeting criteria (i.e. those with the clinical fact provided)
 #'
-#' @export
 #'
 #' @import argos
 #' @import ssdqa.gen
@@ -59,9 +61,12 @@
 #' @importFrom purrr reduce
 #' @importFrom stringr str_wrap
 #'
+#' @export
+#'
 #'
 cnc_sp_process <- function(cohort,
                            multi_or_single_site='multi',
+                           omop_or_pcornet,
                            age_groups=NULL,
                            codeset_tbl=NULL,
                            care_site,
@@ -72,87 +77,56 @@ cnc_sp_process <- function(cohort,
                            time_period='year',
                            vocab_tbl=NULL){
 
-  message('Preparing cohort')
-  ## Step 0: Site check
-  site_filter <- check_site_type(cohort = cohort,
-                                 multi_or_single_site = multi_or_single_site)
-  cohort_filter <- site_filter$cohort
-  grouped_list <- site_filter$grouped_list
-  site_col <- site_filter$grouped_list
-  site_list_adj <- site_filter$site_list_adj
+  ## Check proper arguments
+  cli::cli_div(theme = list(span.code = list(color = 'blue'),
+                            inform = list(color = 'green')))
 
-  ## Step 1: Prepare cohort
-  cohort_prep <- prepare_cohort(cohort_tbl = cohort_filter, age_groups = age_groups, codeset = NULL)
+  if(!multi_or_single_site %in% c('single', 'multi')){cli::cli_abort('Invalid argument for {.code multi_or_single_site}: please enter either {.code multi} or {.code single}')}
+  if(!anomaly_or_exploratory %in% c('anomaly', 'exploratory')){cli::cli_abort('Invalid argument for {.code anomaly_or_exploratory}: please enter either {.code anomaly} or {.code exploratory}')}
 
-  ## Include age groups, if desired
-  if(is.data.frame(age_groups)){
-    grouped_list_prep<-grouped_list%>%
-      append('age_grp')
-  }else{grouped_list_prep<-grouped_list}
+  ## parameter summary output
+  output_type <- suppressWarnings(param_summ(check_string = 'cnc_sp',
+                                             as.list(environment())))
 
-  ### Include visit types, if desired
-  if(is.data.frame(visit_type_tbl)){
-    grouped_list_prep<-grouped_list_prep%>%
-      append('visit_concept_id')
-  }
+  if(tolower(omop_or_pcornet) == 'omop'){
 
-  ## Step 2: Run function
-  message('Computing specialty concordance')
-  site_output<-list()
-  # not over time
-  if(!time){
-    for(k in 1:length(site_list_adj)){
-      site_list_thisrnd <- site_list_adj[[k]]
-      # filters by site
-      cohort_site <- cohort_prep %>% filter(!!sym(site_col)%in%c(site_list_thisrnd))
+    cnc_sp_rslt <- cnc_sp_process_omop(cohort = cohort,
+                                       multi_or_single_site=multi_or_single_site,
+                                       age_groups=age_groups,
+                                       codeset_tbl=codeset_tbl,
+                                       care_site = care_site,
+                                       provider = provider,
+                                       visit_type_tbl=visit_type_tbl,
+                                       time=time,
+                                       time_span=time_span,
+                                       time_period=time_period,
+                                       vocab_tbl=vocab_tbl)
 
-      conc_site <- compute_conc(cohort=cohort_site,
-                                 grouped_list=grouped_list_prep,
-                                 codeset_tbl=codeset_tbl,
-                                 care_site=care_site,
-                                 provider=provider,
-                                 visit_type_tbl=visit_type_tbl,
-                                 age_gp_tbl=age_groups)
-      site_output[[k]]<-conc_site%>%mutate(site=site_list_thisrnd) %>% collect()
-    }
-    conc_tbl<-reduce(.x=site_output,
-                       .f=dplyr::union)
 
-  }
-  else{
-    # over time
-    conc_tbl<-compute_fot(cohort=cohort_prep,
-                            site_list=site_list_adj,
-                            site_col=site_col,
-                            time_span=time_span,
-                            time_period=time_period,
-                            reduce_id=NULL,
-                            check_func=function(dat){
-                              compute_conc(cohort=dat,
-                                           grouped_list=grouped_list_prep,
-                                           codeset_tbl=codeset_tbl,
-                                           care_site=care_site,
-                                           provider=provider,
-                                           visit_type_tbl=visit_type_tbl,
-                                           age_gp_tbl=age_groups,
-                                           time=TRUE)
-                            })
+  }else if(tolower(omop_or_pcornet) == 'pcornet'){
 
-    conc_tbl <- conc_tbl %>% collect()
-  }
+    cnc_sp_rslt <- cnc_sp_process_pcornet(cohort = cohort,
+                                          multi_or_single_site=multi_or_single_site,
+                                          age_groups=age_groups,
+                                          codeset_tbl=codeset_tbl,
+                                          care_site = care_site,
+                                          provider = provider,
+                                          visit_type_tbl=visit_type_tbl,
+                                          time=time,
+                                          time_span=time_span,
+                                          time_period=time_period,
+                                          vocab_tbl=vocab_tbl)
 
-  ## Pulling specialty name
-  spec_names<-join_to_vocabulary(tbl=conc_tbl,
-                                 vocab_tbl=vocab_tbl,
-                                 col='specialty_concept_id')%>%
-    distinct(specialty_concept_id, concept_name)%>%
-    rename(specialty_concept_name=concept_name) %>% collect()
 
-  output_list <- list('cnc_sp_process_names' = spec_names,
-                      'cnc_sp_process_output' = conc_tbl %>% replace_site_col())
+  }else{cli::cli_abort('Invalid argument for {.code omop_or_pcornet}: this function is only compatible with {.code omop} or {.code pcornet}')}
 
-  cli::cli_inform('Both tables required for output generation have been output in a list.')
-  cli::cli_alert_warning('Be sure to classify the specialties into groups in the specialty_name field of {.code cnc_sp_process_names}')
 
-  return(output_list)
+  cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
+                       output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
+
+  return(cnc_sp_rslt)
+
+
+
+
 }
