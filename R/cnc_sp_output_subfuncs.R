@@ -566,7 +566,7 @@ cnc_sp_ms_anom_nt<-function(process_output,
 
     plt<-ggplot(dat_to_plot,
                 aes(x=site, y=specialty_name, text=text, color=prop))+
-      geom_point_interactive(aes(size=mad_val,shape=anomaly_yn, tooltip = text))+
+      geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
       geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
                              aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
       scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
