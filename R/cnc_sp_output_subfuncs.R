@@ -492,8 +492,8 @@ cnc_sp_ms_anom_at <- function(process_output,
          title = paste0('Raw Proportion of ', specialty_filter, ' Across Time'))
 
   t <- dat_to_plot %>%
-    distinct(site, !!sym(facet), dist_eucl_mean, site_loess) %>%
-    group_by(site, !!sym(facet), dist_eucl_mean) %>%
+    distinct(site, !!facet, dist_eucl_mean, site_loess) %>%
+    group_by(site, !!facet, dist_eucl_mean) %>%
     summarise(mean_site_loess = mean(site_loess)) %>%
     mutate(tooltip = paste0('Site: ', site,
                             '\nEuclidean Distance: ', dist_eucl_mean,
