@@ -127,7 +127,7 @@ cnc_sp_ms_exp_nt <- function(data_tbl,
     scale_color_ssdqa()+
     coord_flip()+
     theme_minimal() +
-    facet_wrap(~(facet)) +
+    facet_wrap((facet)) +
     labs(x = 'Proportion',
          y = 'Specialty',
          color = 'Site')
