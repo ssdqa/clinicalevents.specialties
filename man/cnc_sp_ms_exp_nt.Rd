@@ -6,10 +6,12 @@
 Function to produce output for clinical event concordance with specialty
 for multi site, exploratory, not over time}
 \usage{
-cnc_sp_ms_exp_nt(data_tbl)
+cnc_sp_ms_exp_nt(data_tbl, facet = NULL)
 }
 \arguments{
 \item{data_tbl}{table with the data to plot}
+
+\item{facet}{list of one or more variables to facet the plot on}
 }
 \value{
 a dot plot of specialty against proportion of visits with that specialty

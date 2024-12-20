@@ -108,11 +108,13 @@ cnc_sp_ss_exp_nt <- function(data_tbl,
 #'      for multi site, exploratory, not over time
 #'
 #' @param data_tbl table with the data to plot
+#' @param facet list of one or more variables to facet the plot on
 #'
 #' @return a dot plot of specialty against proportion of visits with that specialty
 #'         at each site, with dot color representing site
 #'
-cnc_sp_ms_exp_nt <- function(data_tbl){
+cnc_sp_ms_exp_nt <- function(data_tbl,
+                             facet = NULL){
   dat_to_plot<-data_tbl%>%
     mutate(text=paste("Specialty: ",specialty_name,
                       "\nProportion: ",round(prop,2),
@@ -125,6 +127,7 @@ cnc_sp_ms_exp_nt <- function(data_tbl){
     scale_color_ssdqa()+
     coord_flip()+
     theme_minimal() +
+    facet_wrap(~(facet)) +
     labs(x = 'Proportion',
          y = 'Specialty',
          color = 'Site')

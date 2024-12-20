@@ -207,7 +207,8 @@ cnc_sp_output <- function(cnc_sp_process_output,
                                            facet=facet_vars)
     }else{
       # not over time
-      conc_output_plot <- cnc_sp_ms_exp_nt(data_tbl=conc_output_pp)
+      conc_output_plot <- cnc_sp_ms_exp_nt(data_tbl=conc_output_pp,
+                                           facet = facet_vars)
     }
     ## MULTI SITE, ANOMALY
   }else if(multi_or_single_site=='multi'&anomaly_or_exploratory=='anomaly'){
