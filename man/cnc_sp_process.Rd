@@ -2,7 +2,7 @@
 % Please edit documentation in R/cnc_sp_process.R
 \name{cnc_sp_process}
 \alias{cnc_sp_process}
-\title{Concordance: Clinical Events and Specialties}
+\title{Clinical Events and Specialties}
 \usage{
 cnc_sp_process(
   cohort,
@@ -22,7 +22,10 @@ cnc_sp_process(
 \arguments{
 \item{cohort}{\itemize{
 \item A dataframe with the cohort of patients for your study. Should include the columns:
-\code{site} | \code{person_id} | \code{start_date} | \code{end_date}
+\item \code{site}
+\item \code{person_id}
+\item \code{start_date}
+\item \code{end_date}
 }}
 
 \item{multi_or_single_site}{Option to run the function on a single vs multiple sites
@@ -47,30 +50,30 @@ If you would \emph{not} like to stratify by age group, leave the argument as NUL
 
 \item{codeset_tbl}{table in the specs directory with the columns:
 \itemize{
-\item domain: name of the domain
-\item domain_tbl: name of the cdm_tbl
-\item concept_field: column name in the domain_tbl for which to search the codeset concept_ids
-\item date_field: column name in the domain_tbl to be used for time-based filtering
-\item codeset_name: name of a codeset that exists as a csv file in the specs directory. The codeset can optionally contain a \code{cluster} column specifying subgroups of the codeset, and if so, the results will be stratified by cluster
-}}
+\item \code{domain}: name of the domain
+\item \code{domain_tbl}: name of the cdm_tbl
+\item \code{concept_field}: column name in the domain_tbl for which to search the codeset concept_ids
+\item \code{date_field}: column name in the domain_tbl to be used for time-based filtering
+\item \code{codeset_name}: name of a codeset that exists as a csv file in the specs directory.
+}
 
-\item{care_site}{TRUE if want to look at care_site specialty
+The codeset can optionally contain a \code{cluster} column specifying subgroups of the codeset,
+and if so, the results will be stratified by cluster}
+
+\item{care_site}{TRUE if want to look at care_site specialty (specialty_concept_id in the care_site table)
 FALSE if do not want to look at care_site specialty}
 
-\item{provider}{TRUE if want to look at provider specialty
+\item{provider}{TRUE if want to look at provider specialty (specialty_concept_id in the provider table)
 FALSE if do not want to look at provider specialty
 IF both \code{provider} and \code{care_site} are both TRUE,
 provider specialty will be prioritized if provider and care_site are discordant for the visit}
 
-\item{visit_type_tbl}{\itemize{
-\item a csv file that defines available visit types that are called in \code{visit_types.} defaults to the provided
-\code{conc_visit_types.csv} file, which contains the following fields:
-- visit_concept_id: the visit_concept_id that represents the visit type of interest (i.e. 9201)
-- visit_type: the string label to describe the visit type; this label can be used multiple times
-within the file if multiple visit_concept_ids represent the visit type
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{                    This CSV can be altered to fit the users needs, or another csv with the same columns and formatting can be supplied.
-}\if{html}{\out{</div>}}
+\item{visit_type_tbl}{a table that defines available visit types that are called in \code{visit_types.} defaults to the provided
+\code{cnc_sp_visit_file_(omop/pcornet)} file, which contains the following fields:
+\itemize{
+\item \code{visit_concept_id} / \code{visit_detail_concept_id} or \code{enc_type}: the visit_(detail)_concept_id or enc_type that represents the visit type of interest (i.e. 9201 or IP)
+\item \code{visit_type}: the string label to describe the visit type; this label can be used multiple times
+within the file if multiple visit_concept_ids/enc_types represent the visit type
 }}
 
 \item{time}{TRUE if results should be over time. Defaults to FALSE}
@@ -83,19 +86,88 @@ within the file if multiple visit_concept_ids represent the visit type
 }
 \value{
 2 tables:
-1 table stored as a csv file in the \code{results} directory containing all of the specialties in the results of the
+1 table containing all of the specialties in the results of the
 DQ check, with the columns:
-- specialty_concept_id: an identifier for the specialty based on the data model
-- specialty_concept_name: if a \code{vocab_tbl} is provided, the name of the specialty
+- \code{specialty_concept_id}: an identifier for the specialty based on the data model
+- \code{specialty_concept_name}: if a \code{vocab_tbl} is provided, the name of the specialty
 that corresponds to each specialty_concept_id. If no \code{vocab_tbl} is provided,
 defaults to 'No vocabulary table input'
 1 table containing counts of visits, optionally stratified by visit and/or time period,
 with each specialty for the visits meeting criteria (i.e. those with the clinical fact provided)
 }
 \description{
-This is a check that will assess quality of specialty data in a study sample
-The user will provide a clinical codeset of interest with an associated domain
-and will be able to stratify results by:
-visit type (user will provide groupings)
-time
+This is a concordance module that will assess the types of specialty care received by and
+quality of specialty data found in a study sample. The user will provide a
+clinical codeset of interest (\code{codeset_tbl}) with an associated domain
+and will be able to stratify results by: visit type
+(with user-provided groupings in \code{visit_type_tbl}), cluster
+(an additional column added to \code{codeset_tbl} with subgroupings), or time
+}
+\examples{
+
+#' Source setup file
+source(system.file('setup.R', package = 'clinicalevents.specialties'))
+
+#' Create in-memory RSQLite database using data in extdata directory
+conn <- mk_testdb_omop()
+
+#' Establish connection to database and generate internal configurations
+initialize_dq_session(session_name = 'cnc_sp_process_test',
+                      working_directory = getwd(),
+                      db_conn = conn,
+                      is_json = FALSE,
+                      file_subdirectory = system.file('extdata',
+                                        package = 'clinicalevents.specialties'),
+                      cdm_schema = NA)
+
+#' Build mock study cohort
+cohort <- cdm_tbl('person') \%>\% dplyr::distinct(person_id) \%>\%
+  dplyr::mutate(start_date = as.Date(-5000),
+                #RSQLite does not store date objects,
+                #hence the numerics
+                end_date = as.Date(15000),
+                site = ifelse(person_id \%in\% c(1:6), 'synth1', 'synth2'))
+
+#' Prepare input tables
+cnc_sp_visit_tbl <- dplyr::tibble(visit_concept_id = c(9201,9202,9203),
+                                  visit_type = c('inpatient', 'outpatient', 'emergency'))
+
+cnc_sp_concept_tbl <- dplyr::tibble(domain = 'Hypertension',
+                                    domain_tbl = 'condition_occurrence',
+                                    concept_field = 'condition_concept_id',
+                                    date_field = 'condition_start_date',
+                                    vocabulary_field = NA,
+                                    codeset_name = 'dx_hypertension')
+
+#' Execute `cnc_sp_process` function
+#' This example will use the single site, exploratory, cross sectional
+#' configuration
+cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
+                                         omop_or_pcornet = 'omop',
+                                         multi_or_single_site = 'single',
+                                         codeset_tbl = cnc_sp_concept_tbl,
+                                         visit_type_tbl = cnc_sp_visit_tbl,
+                                         time = FALSE)
+
+cnc_sp_process_example$cnc_sp_process_output
+cnc_sp_process_example$cnc_sp_process_names
+
+#' Execute `cnc_sp_output` function
+cnc_sp_output_example <-
+  cnc_sp_output(cnc_sp_process_output =
+                  cnc_sp_process_example$cnc_sp_process_output,
+                cnc_sp_process_names =
+                  cnc_sp_process_example$cnc_sp_process_names \%>\%
+                    dplyr::mutate(specialty_name = 'General Pediatrics'),
+                multi_or_single_site = 'single',
+                anomaly_or_exploratory = 'exploratory',
+                time = FALSE,
+                facet_vars = c('visit_type'))
+
+cnc_sp_output_example
+
+#' Easily convert the graph into an interactive ggiraph or plotly object with
+#' `make_interactive_ssdqa()`
+
+make_interactive_ssdqa(cnc_sp_output_example)
 }

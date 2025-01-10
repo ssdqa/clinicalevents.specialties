@@ -1,9 +1,19 @@
 Package: clinicalevents.specialties
-Title: Clinical Events and Specialties
+Title: Assess the Relationship Between Clinical Events and Specialty Care
 Version: 0.0.0.9000
 Authors@R: 
-    person("Kaleigh", "Wieand", , "wieandk@chop.edu", role = c("aut", "cre"))
-Description: This package represents one of several modules in the broader SSDQA ecosystem. The Clinical Facts and Specialties module identifies specialties associated with a user-provided clinical fact (i.e. a diagnosis) and evaluates the distribution of specialty types.
+    c(person("Hanieh", "Razzaghi", email = "razzaghih@chop.edu", role = c("aut"),
+             comment = c(ORCID = "0000-0001-5001-1590")),
+      person("Kaleigh", "Wieand", email = "wieandk@chop.edu", role = c("aut", "cre"),
+             comment = c(ORCID = "0009-0003-7477-2601")),
+      person("Kimberley", "Dickinson", email = "dickinsokl@chop.edu", role = c("aut"),
+             comment = c(ORCID = "0000-0001-9523-056X")),
+      person("Charles", "Bailey", email = "baileyc@chop.edu", role = c("aut"),
+             comment = c(ORCID = "0000-0002-8967-0662")))
+Description: The Clinical Facts and Specialties module, part of the larger SSDQA ecosystem, 
+    identifies provider and/or care site specialties associated with a user-provided clinical fact 
+    (i.e. a diagnosis). These results allow users to explore what kind of care a specific
+    cohort of patients are receiving and whether this aligns with clinical expectations.
 License: MPL-2.0
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

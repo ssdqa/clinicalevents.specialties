@@ -7,6 +7,7 @@ specialty of interest}
 \usage{
 find_fact_spec_conc_omop(
   cohort,
+  visit_id,
   fact_codes,
   fact_tbl,
   care_site,
@@ -16,6 +17,9 @@ find_fact_spec_conc_omop(
 }
 \arguments{
 \item{cohort}{table with at least person_id}
+
+\item{visit_id}{the ID column associated with the visit table of interest
+(either visit_occurrence_id or visit_detail_id)}
 
 \item{fact_codes}{codeset with _concept_id for the dx/px/etc of interest}
 

@@ -55,7 +55,7 @@ insert_top_n_indicator<-function(dat,
                                      TRUE~TRUE))
 }
 
-#' * Single Site, Exploratory, No Time*
+#' * Single Site, Exploratory, Cross-Sectional*
 #' Function to produce output for clinical event concordance with specialty
 #'      for single site, exploratory, not over time
 #'
@@ -68,7 +68,7 @@ insert_top_n_indicator<-function(dat,
 #'
 #' @return a bar plot based on the values of `x_var`, `y_var`, `fill_var`, `facet`
 #'
-cnc_sp_ss_exp_nt <- function(data_tbl,
+cnc_sp_ss_exp_cs <- function(data_tbl,
                              facet,
                              x_var,
                              y_var,
@@ -103,7 +103,7 @@ cnc_sp_ss_exp_nt <- function(data_tbl,
 
 }
 
-#' *Multi-Site, Exploratory, No Time*
+#' *Multi-Site, Exploratory, Cross-Sectional*
 #' Function to produce output for clinical event concordance with specialty
 #'      for multi site, exploratory, not over time
 #'
@@ -113,7 +113,7 @@ cnc_sp_ss_exp_nt <- function(data_tbl,
 #' @return a dot plot of specialty against proportion of visits with that specialty
 #'         at each site, with dot color representing site
 #'
-cnc_sp_ms_exp_nt <- function(data_tbl,
+cnc_sp_ms_exp_cs <- function(data_tbl,
                              facet = NULL){
   dat_to_plot<-data_tbl%>%
     mutate(text=paste("Specialty: ",specialty_name,
@@ -139,7 +139,7 @@ cnc_sp_ms_exp_nt <- function(data_tbl,
 
 }
 
-#' *Single Site, Exploratory, Across Time*
+#' *Single Site, Exploratory, Longitudinal*
 #' Function to produce output for clinical event concordance with specialty
 #'      for single site, exploratory, across time
 #'
@@ -148,7 +148,7 @@ cnc_sp_ms_exp_nt <- function(data_tbl,
 #'
 #' @return a plotly line plot of the proportion of visits with each specialty
 #'          against time, with line color representing specialty
-cnc_sp_ss_exp_at <- function(data_tbl,
+cnc_sp_ss_exp_la <- function(data_tbl,
                              facet=NULL){
   dat_to_plot<-data_tbl %>%
     mutate(text=paste("Specialty: ",specialty_name,
@@ -183,14 +183,14 @@ cnc_sp_ss_exp_at <- function(data_tbl,
   return(plt)
 }
 
-#' * Multi-Site, Exploratory, Across Time*
+#' * Multi-Site, Exploratory, Longitudinal*
 #' Function to produce output for clinical event concordance with specialty
 #'      for multi site, exploratory, across time
 #' @param data_tbl table which must contain the cols: time_start | codeset_name | specialty_name | site
 #' @param facet if supplied, variable to facet the plot by
 #' @return line plot, with time on x axis, proportion on y, line color determined by site
 #'              with a dotted line for the all-site mean
-cnc_sp_ms_exp_at <- function(data_tbl,
+cnc_sp_ms_exp_la <- function(data_tbl,
                              facet=NULL){
   # compute all site mean
    all_site_mean <- data_tbl%>%
@@ -240,7 +240,7 @@ cnc_sp_ms_exp_at <- function(data_tbl,
 }
 
 
-#' *Single Site, Anomaly, No Time*
+#' *Single Site, Anomaly, Cross-Sectional*
 #'
 #' Function to produce output for clinical event concordance with specialty
 #'      for single site, anomaly, not over time
@@ -252,7 +252,7 @@ cnc_sp_ms_exp_at <- function(data_tbl,
 #'         for a given cluster, and the size of the dot represents the mean proportion
 #'         across all specialties
 #'
-cnc_sp_ss_anom_nt<- function(data_tbl,
+cnc_sp_ss_anom_cs<- function(data_tbl,
                              facet = NULL){
 
 
@@ -293,7 +293,7 @@ cnc_sp_ss_anom_nt<- function(data_tbl,
 
 }
 
-#' *Single Site, Anomaly, Across Time*
+#' *Single Site, Anomaly, Longitudinal*
 #'
 #' Control chart looking at proportion of visits with specialty over time
 #'     and a reference table
@@ -318,7 +318,7 @@ cnc_sp_ss_anom_nt<- function(data_tbl,
 #'         graph from the timetk package
 #'
 #'
-cnc_sp_ss_anom_at <- function(process_output,
+cnc_sp_ss_anom_la <- function(process_output,
                               filt_list=NULL,
                               ct_col,
                               denom_col,
@@ -423,7 +423,7 @@ cnc_sp_ss_anom_at <- function(process_output,
 
 }
 
-#' **Multi-Site Across Time Anomaly**
+#' **Multi-Site Anomaly Longitudinal**
 #' Function to generate output displaying the Euclidean distance between two time series
 #'
 #' @param process_output output from `cnc_sp_process`
@@ -439,7 +439,7 @@ cnc_sp_ss_anom_at <- function(process_output,
 #'    3) a bar graph with the Euclidean distance value for each site, with the average
 #'    proportion as the fill
 #'
-cnc_sp_ms_anom_at <- function(process_output,
+cnc_sp_ms_anom_la <- function(process_output,
                               grp_vars,
                               specialty_filter=NULL){
 
@@ -534,7 +534,7 @@ cnc_sp_ms_anom_at <- function(process_output,
   return(output)
 }
 
-#' *Multi-Site, Anomaly, No Time*
+#' *Multi-Site, Anomaly, Cross-Sectional*
 #'
 #' @param process_output the output from the cnc_sp check, summarized to be used in the multi site anomaly detection check
 #' @param title text containing the title for the plot
@@ -545,7 +545,7 @@ cnc_sp_ms_anom_at <- function(process_output,
 #'         for a given specialty, and the size of the dot represents the mean proportion
 #'         across all sites
 #'
-cnc_sp_ms_anom_nt<-function(process_output,
+cnc_sp_ms_anom_cs<-function(process_output,
                             title,
                             text_wrapping_char = 60){
 

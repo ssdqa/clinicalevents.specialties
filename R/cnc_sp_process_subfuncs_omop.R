@@ -39,7 +39,15 @@ compute_conc_omop <- function(cohort,
   codeset_list <- split(codeset_tbl, seq(nrow(codeset_tbl)))
 
   # build grouped list
-  grp_vis <- grouped_list %>% append(c('visit_occurrence_id'))
+  if('visit_concept_id' %in% colnames(visit_type_tbl)){
+    visit_id <- 'visit_occurrence_id'
+    visit_date <- 'visit_start_date'
+  }else if('visit_detail_concept_id' %in% colnames(visit_type_tbl)){
+    visit_id <- 'visit_detail_id'
+    visit_date <- 'visit_detail_start_date'
+  }
+
+  grp_vis <- grouped_list %>% append(c(visit_id))
   grp_vis_spec <- grp_vis %>% append(c('spec_flag','total_gp_ct'))
   grp_spec <- grouped_list%>%append(c('specialty_concept_id', 'cluster'))
   if(time){grp_spec<-grp_spec%>%append(c('time_start','time_increment'))}
@@ -62,6 +70,7 @@ compute_conc_omop <- function(cohort,
 
     # find occurrences of codeset codes with specialty
     visit_specs <- find_fact_spec_conc_omop(cohort,
+                                            visit_id = visit_id,
                                             fact_codes=codes_to_use,
                                             fact_tbl=domain_tbl_use,
                                             care_site=care_site,
@@ -75,7 +84,7 @@ compute_conc_omop <- function(cohort,
       visit_specs <- visit_specs %>%
         collect() %>%
         inner_join(new_person %>% select(person_id, birth_date)) %>%
-        mutate(visit_age=as.numeric((visit_start_date-birth_date)/365.25)) %>%
+        mutate(visit_age=as.numeric((!!sym(visit_date)-birth_date)/365.25)) %>%
         merge(age_gp_tbl) %>%
         mutate(age_grp = case_when(visit_age >= min_age & visit_age <= max_age ~ group,
                                    TRUE ~ as.character(NA)))%>%
@@ -86,22 +95,36 @@ compute_conc_omop <- function(cohort,
     # calculate the concordance per the grouping parameters
     conc_prop<- visit_specs %>%
       group_by(!!!syms(grp_spec))%>%
-      summarise(num_visits=n_distinct(visit_occurrence_id)) %>%
+      summarise(num_visits=n_distinct(!!sym(visit_id))) %>%
       ungroup()%>%
       mutate(codeset_name=codeset_name) %>% collect()
 
     if(!is.null(visit_type_tbl)){
-      grp_vis_type <- grp_spec[!grp_spec=='visit_concept_id']
-      grp_vis_type <- grp_vis_type %>% append(c('visit_type','codeset_name'))
+      if(visit_id == 'visit_occurrence_id'){
+        grp_vis_type <- grp_spec[!grp_spec=='visit_concept_id']
+        grp_vis_type <- grp_vis_type %>% append(c('visit_type','codeset_name'))
 
-      visit_type_vec <- visit_type_tbl %>% distinct(visit_concept_id) %>% pull()
+        visit_type_vec <- visit_type_tbl %>% distinct(visit_concept_id) %>% pull()
 
-      conc_prop <- conc_prop %>%
-        filter(visit_concept_id %in% visit_type_vec) %>%
-        left_join(visit_type_tbl, by = 'visit_concept_id') %>%
-        group_by(!!!syms(grp_vis_type)) %>%
-        summarise(num_visits=sum(num_visits, na.rm=TRUE)) %>%
-        ungroup()
+        conc_prop <- conc_prop %>%
+          filter(visit_concept_id %in% visit_type_vec) %>%
+          left_join(visit_type_tbl, by = 'visit_concept_id') %>%
+          group_by(!!!syms(grp_vis_type)) %>%
+          summarise(num_visits=sum(num_visits, na.rm=TRUE)) %>%
+          ungroup()
+      }else if(visit_id == 'visit_detail_id'){
+        grp_vis_type <- grp_spec[!grp_spec=='visit_detail_concept_id']
+        grp_vis_type <- grp_vis_type %>% append(c('visit_type','codeset_name'))
+
+        visit_type_vec <- visit_type_tbl %>% distinct(visit_detail_concept_id) %>% pull()
+
+        conc_prop <- conc_prop %>%
+          filter(visit_detail_concept_id %in% visit_type_vec) %>%
+          left_join(visit_type_tbl, by = 'visit_detail_concept_id') %>%
+          group_by(!!!syms(grp_vis_type)) %>%
+          summarise(num_visits=sum(num_visits, na.rm=TRUE)) %>%
+          ungroup()
+        }
     }
 
     codeset_results[[codeset_name]] <- conc_prop
@@ -118,6 +141,8 @@ compute_conc_omop <- function(cohort,
 #' specialty of interest
 #'
 #' @param cohort table with at least person_id
+#' @param visit_id the ID column associated with the visit table of interest
+#'                 (either visit_occurrence_id or visit_detail_id)
 #' @param fact_codes codeset with _concept_id for the dx/px/etc of interest
 #' @param fact_tbl cdm_tbl in which to search for fact_codes
 #' @param care_site boolean indicating whether to search care_site (at visit level) for specialty
@@ -127,6 +152,7 @@ compute_conc_omop <- function(cohort,
 #' @return table with all occurrences of the fact_codes for the cohort, and visit info only
 #'         if visit was to a specialty in the codeset
 find_fact_spec_conc_omop <- function(cohort,
+                                     visit_id,
                                      fact_codes,
                                      fact_tbl,
                                      care_site,
@@ -138,7 +164,7 @@ find_fact_spec_conc_omop <- function(cohort,
 
   message('Finding code occurrences')
   fact_occurrences <-
-    fact_tbl %>% select(person_id, visit_occurrence_id, concept_id)%>%
+    fact_tbl %>% select(person_id, !!sym(visit_id), concept_id)%>%
     inner_join(cohort) %>%
     # select(person_id, concept_id,
     #        visit_occurrence_id, site) %>%
@@ -149,37 +175,58 @@ find_fact_spec_conc_omop <- function(cohort,
 
   message('Finding specialties')
   if(time){
-    visits <- cdm_tbl('visit_occurrence') %>%
-      inner_join(cohort)%>%
-      filter(visit_start_date >= start_date,
-             visit_start_date <= end_date) %>%
-      filter(visit_start_date>=time_start,
-               visit_start_date<=time_end)
+    if(visit_id == 'visit_occurrence_id'){
+      visits <- cdm_tbl('visit_occurrence') %>%
+        inner_join(cohort)%>%
+        filter(visit_start_date >= start_date,
+               visit_start_date <= end_date) %>%
+        filter(visit_start_date>=time_start,
+                 visit_start_date<=time_end) %>%
+        select(visit_occurrence_id, visit_concept_id,
+               visit_start_date, provider_id, care_site_id)
+    }else{
+      visits <- cdm_tbl('visit_detail') %>%
+        inner_join(cohort)%>%
+        filter(visit_detail_start_date >= start_date,
+               visit_detail_start_date <= end_date) %>%
+        filter(visit_detail_start_date>=time_start,
+               visit_detail_start_date<=time_end) %>%
+        select(visit_detail_id, visit_detail_concept_id,
+               visit_detail_start_date, provider_id, care_site_id)
+      }
   }else{
-    visits <-
-      cdm_tbl('visit_occurrence') %>%
-      inner_join(cohort) %>%
-      filter(visit_start_date >= start_date,
-             visit_start_date <= end_date)
+    if(visit_id == 'visit_occurrence_id'){
+      visits <- cdm_tbl('visit_occurrence') %>%
+        inner_join(cohort)%>%
+        filter(visit_start_date >= start_date,
+               visit_start_date <= end_date) %>%
+        select(visit_occurrence_id, visit_concept_id,
+               visit_start_date, provider_id, care_site_id)
+    }else{
+      visits <- cdm_tbl('visit_detail') %>%
+        inner_join(cohort)%>%
+        filter(visit_detail_start_date >= start_date,
+               visit_detail_start_date <= end_date) %>%
+        select(visit_detail_id, visit_detail_concept_id,
+               visit_detail_start_date, provider_id, care_site_id)
+    }
   }
 
 
   if(care_site&provider){
-    pv_spec <-  visits %>% select(visit_occurrence_id, visit_concept_id,
-                                  visit_start_date, provider_id)%>%
-      inner_join(select(fact_occurrences, visit_occurrence_id))%>%
+    pv_spec <- visits %>%
+      select(-care_site_id) %>%
+      inner_join(select(fact_occurrences, !!sym(visit_id)))%>%
       left_join(select(cdm_tbl('provider'),c(provider_id, specialty_concept_id)),
                 by = 'provider_id')%>%
-      rename(specialty_concept_id_pv=specialty_concept_id) %>%
-      select(visit_occurrence_id,visit_concept_id,visit_start_date,specialty_concept_id_pv)
+      rename(specialty_concept_id_pv=specialty_concept_id)
 
-    cs_spec <- visits %>% select(visit_occurrence_id, visit_concept_id,
-                                 visit_start_date, care_site_id)%>%
-      inner_join(select(fact_occurrences,visit_occurrence_id))%>%
+    cs_spec <- visits %>%
+      select(-provider_id) %>%
+      inner_join(select(fact_occurrences,!!sym(visit_id)))%>%
       left_join(select(cdm_tbl('care_site'),c(care_site_id, specialty_concept_id)),
                 by = 'care_site_id')%>%
-      rename(specialty_concept_id_cs=specialty_concept_id)%>%
-      select(visit_occurrence_id,visit_concept_id,visit_start_date,specialty_concept_id_cs)
+      rename(specialty_concept_id_cs=specialty_concept_id)
 
     spec_full <-
       visits %>%
@@ -188,21 +235,20 @@ find_fact_spec_conc_omop <- function(cohort,
       mutate(specialty_concept_id=case_when(!is.na(specialty_concept_id_pv)~specialty_concept_id_pv,
                                             !is.na(specialty_concept_id_cs)~specialty_concept_id_cs,
                                             TRUE~NA_integer_))%>%
-      select(-c(specialty_concept_id_pv,specialty_concept_id_cs)) %>%
-      select(visit_occurrence_id, visit_concept_id, visit_start_date, specialty_concept_id) %>%
+      select(-c(specialty_concept_id_pv,specialty_concept_id_cs, provider_id, care_site_id)) %>%
       distinct() %>% compute_new()
 
   }else if(provider&!care_site){
     spec_full <- visits %>%
-      select(visit_occurrence_id, visit_concept_id, visit_start_date, provider_id)%>%
-      inner_join(select(fact_occurrences, visit_occurrence_id))%>%
+      select(-care_site_id)%>%
+      inner_join(select(fact_occurrences, !!sym(visit_id)))%>%
       left_join(select(cdm_tbl('provider'),c(provider_id, specialty_concept_id)),
                 by = 'provider_id') %>%
       distinct() %>% compute_new()
   }else if(care_site&!provider){
     spec_full <- visits %>%
-      select(visit_occurrence_id, visit_concept_id, visit_start_date, care_site_id)%>%
-      inner_join(select(fact_occurrences, visit_occurrence_id))%>%
+      select(-provider_id)%>%
+      inner_join(select(fact_occurrences, !!sym(visit_id)))%>%
       left_join(select(cdm_tbl('care_site'),c(care_site_id, specialty_concept_id)),
                 by = 'care_site_id') %>%
       distinct() %>% compute_new()

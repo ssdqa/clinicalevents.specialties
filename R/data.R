@@ -6,9 +6,9 @@
 #' this file and include their own domain definitions.
 #'
 #' @format ## cnc_sp_visit_file_omop
-#' A data frame with 2 columns and 8 rows
+#' A data frame with 2 columns
 #' \describe{
-#'   \item{visit_concept_id}{The visit_concept_id as it appears in the visit_occurrence table}
+#'   \item{visit_(detail)_concept_id}{The visit_concept_id or visit_detail_concept_id as it appears in the visit_occurrence or visit_detail table}
 #'   \item{visit_type}{A string to label the visit type of the visit_concept_id; this string is what should be referenced in the `visit_types` parameter}
 #' }
 #'
@@ -24,7 +24,7 @@
 #' `file_subdirectory` indicated in `initialize_dq_session`
 #'
 #' @format ## `cnc_sp_codeset_file`
-#' A data frame with 2 rows and 5 columns
+#' A data frame with 5 columns
 #' \describe{
 #'   \item{domain}{A string label for the domain of interest}
 #'   \item{domain_tbl}{The name of the CDM table where the variable can be found}
@@ -42,7 +42,7 @@
 #' labelled for use in the `cnc_sp_output` function.
 #'
 #' @format ## `cnc_sp_specialty_names`
-#' A data frame with 5 rows and 3 columns
+#' A data frame with 3 columns
 #' \describe{
 #'   \item{specialty_concept_id}{The specialty_concept_id identified in `cnc_sp_process`}
 #'   \item{specialty_concept_name}{If a vocab_tbl was provided, the concept_name associated with the specialty_concept_id; otherwise will default to "No vocabulary table input"}

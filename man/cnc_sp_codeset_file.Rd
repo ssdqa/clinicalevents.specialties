@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{cnc_sp_codeset_file}}{
 
-A data frame with 2 rows and 5 columns
+A data frame with 5 columns
 \describe{
 \item{domain}{A string label for the domain of interest}
 \item{domain_tbl}{The name of the CDM table where the variable can be found}

@@ -7,7 +7,7 @@
 \format{
 \subsection{\code{cnc_sp_specialty_names}}{
 
-A data frame with 5 rows and 3 columns
+A data frame with 3 columns
 \describe{
 \item{specialty_concept_id}{The specialty_concept_id identified in \code{cnc_sp_process}}
 \item{specialty_concept_name}{If a vocab_tbl was provided, the concept_name associated with the specialty_concept_id; otherwise will default to "No vocabulary table input"}
