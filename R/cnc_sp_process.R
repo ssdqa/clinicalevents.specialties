@@ -40,7 +40,9 @@
 #' @param provider TRUE if want to look at provider specialty (specialty_concept_id in the provider table)
 #'                  FALSE if do not want to look at provider specialty
 #'                  IF both `provider` and `care_site` are both TRUE,
-#'                        provider specialty will be prioritized if provider and care_site are discordant for the visit
+#'                  provider specialty will be prioritized if provider and care_site are discordant for the visit
+#' @param visit_detail OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
+#'                                  FALSE if want to use visit_occurrence table (default)
 #' @param visit_type_tbl a table that defines available visit types that are called in `visit_types.` defaults to the provided
 #'                           `cnc_sp_visit_file_(omop/pcornet)` file, which contains the following fields:
 #' - `visit_concept_id` / `visit_detail_concept_id` or `enc_type`: the visit_(detail)_concept_id or enc_type that represents the visit type of interest (i.e. 9201 or IP)
@@ -80,6 +82,7 @@ cnc_sp_process <- function(cohort,
                            codeset_tbl,
                            care_site=FALSE,
                            provider=TRUE,
+                           visit_detail = FALSE,
                            visit_type_tbl=NULL,
                            time=FALSE,
                            time_span=c('2012-01-01', '2020-01-01'),
@@ -106,6 +109,7 @@ cnc_sp_process <- function(cohort,
                                        codeset_tbl=codeset_tbl,
                                        care_site = care_site,
                                        provider = provider,
+                                       visit_detail = visit_detail,
                                        visit_type_tbl=visit_type_tbl,
                                        time=time,
                                        time_span=time_span,

@@ -12,6 +12,8 @@
 #'                        codeset_name: name of a codeset in the specs directory
 #' @param care_site boolean indicating whether to search care_site (at visit level) for specialty
 #' @param provider boolean indicating whether to search provider (at visit level) for specialty
+#' @param visit_detail TRUE if want to use the visit_detail table to identify specialty visits
+#'                     FALSE if want to use visit_occurrence table (default)
 #' @param visit_type_tbl if provided, a map from visit_concept_id to a visit_type classification.
 #'                       if not required, should be `NULL`
 #' @param age_gp_tbl if provided, table with the columns:
@@ -31,6 +33,7 @@ compute_conc_omop <- function(cohort,
                               codeset_tbl=read_codeset("conc_codesets", col_types = 'cccc'),
                               care_site,
                               provider,
+                              visit_detail = FALSE,
                               visit_type_tbl=NULL,
                               age_gp_tbl=NULL,
                               time=FALSE) {
@@ -39,12 +42,12 @@ compute_conc_omop <- function(cohort,
   codeset_list <- split(codeset_tbl, seq(nrow(codeset_tbl)))
 
   # build grouped list
-  if('visit_concept_id' %in% colnames(visit_type_tbl)){
-    visit_id <- 'visit_occurrence_id'
-    visit_date <- 'visit_start_date'
-  }else if('visit_detail_concept_id' %in% colnames(visit_type_tbl)){
+  if(visit_detail){
     visit_id <- 'visit_detail_id'
     visit_date <- 'visit_detail_start_date'
+  }else{
+    visit_id <- 'visit_occurrence_id'
+    visit_date <- 'visit_start_date'
   }
 
   grp_vis <- grouped_list %>% append(c(visit_id))

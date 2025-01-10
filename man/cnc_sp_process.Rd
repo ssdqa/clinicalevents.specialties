@@ -12,6 +12,7 @@ cnc_sp_process(
   codeset_tbl,
   care_site = FALSE,
   provider = TRUE,
+  visit_detail = FALSE,
   visit_type_tbl = NULL,
   time = FALSE,
   time_span = c("2012-01-01", "2020-01-01"),
@@ -67,6 +68,9 @@ FALSE if do not want to look at care_site specialty}
 FALSE if do not want to look at provider specialty
 IF both \code{provider} and \code{care_site} are both TRUE,
 provider specialty will be prioritized if provider and care_site are discordant for the visit}
+
+\item{visit_detail}{OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
+FALSE if want to use visit_occurrence table (default)}
 
 \item{visit_type_tbl}{a table that defines available visit types that are called in \code{visit_types.} defaults to the provided
 \code{cnc_sp_visit_file_(omop/pcornet)} file, which contains the following fields:

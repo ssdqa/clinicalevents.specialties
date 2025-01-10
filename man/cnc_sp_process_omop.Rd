@@ -11,6 +11,7 @@ cnc_sp_process_omop(
   codeset_tbl = NULL,
   care_site,
   provider,
+  visit_detail,
   visit_type_tbl = NULL,
   time = FALSE,
   time_span = c("2012-01-01", "2020-01-01"),
@@ -54,6 +55,9 @@ FALSE if do not want to look at care_site specialty}
 FALSE if do not want to look at provider specialty
 IF both \code{provider} and \code{care_site} are both TRUE,
 provider specialty will be prioritized if provider and care_site are discordant for the visit}
+
+\item{visit_detail}{TRUE if want to use the visit_detail table to identify specialty visits
+FALSE if want to use visit_occurrence table (default)}
 
 \item{visit_type_tbl}{\itemize{
 \item a csv file that defines available visit types that are called in \code{visit_types.} defaults to the provided

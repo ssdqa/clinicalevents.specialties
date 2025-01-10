@@ -10,6 +10,7 @@ compute_conc_omop(
   codeset_tbl = read_codeset("conc_codesets", col_types = "cccc"),
   care_site,
   provider,
+  visit_detail = FALSE,
   visit_type_tbl = NULL,
   age_gp_tbl = NULL,
   time = FALSE
@@ -31,6 +32,9 @@ codeset_name: name of a codeset in the specs directory}
 \item{care_site}{boolean indicating whether to search care_site (at visit level) for specialty}
 
 \item{provider}{boolean indicating whether to search provider (at visit level) for specialty}
+
+\item{visit_detail}{TRUE if want to use the visit_detail table to identify specialty visits
+FALSE if want to use visit_occurrence table (default)}
 
 \item{visit_type_tbl}{if provided, a map from visit_concept_id to a visit_type classification.
 if not required, should be \code{NULL}}

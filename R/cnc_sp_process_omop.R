@@ -28,7 +28,9 @@
 #' @param provider TRUE if want to look at provider specialty
 #'                  FALSE if do not want to look at provider specialty
 #'                  IF both `provider` and `care_site` are both TRUE,
-#'                        provider specialty will be prioritized if provider and care_site are discordant for the visit
+#'                  provider specialty will be prioritized if provider and care_site are discordant for the visit
+#' @param visit_detail TRUE if want to use the visit_detail table to identify specialty visits
+#'                     FALSE if want to use visit_occurrence table (default)
 #' @param visit_type_tbl - a csv file that defines available visit types that are called in `visit_types.` defaults to the provided
 #'                           `conc_visit_types.csv` file, which contains the following fields:
 #'                           - visit_concept_id: the visit_concept_id that represents the visit type of interest (i.e. 9201)
@@ -57,6 +59,7 @@ cnc_sp_process_omop <- function(cohort,
                                 codeset_tbl=NULL,
                                 care_site,
                                 provider,
+                                visit_detail,
                                 visit_type_tbl=NULL,
                                 time=FALSE,
                                 time_span=c('2012-01-01', '2020-01-01'),
@@ -102,6 +105,7 @@ cnc_sp_process_omop <- function(cohort,
                                      codeset_tbl=codeset_tbl,
                                      care_site=care_site,
                                      provider=provider,
+                                     visit_detail = visit_detail,
                                      visit_type_tbl=visit_type_tbl,
                                      age_gp_tbl=age_groups)
       site_output[[k]]<-conc_site%>%mutate(site=site_list_thisrnd) %>% collect()
@@ -124,6 +128,7 @@ cnc_sp_process_omop <- function(cohort,
                                                 codeset_tbl=codeset_tbl,
                                                 care_site=care_site,
                                                 provider=provider,
+                                                visit_detail = visit_detail,
                                                 visit_type_tbl=visit_type_tbl,
                                                 age_gp_tbl=age_groups,
                                                 time=TRUE)
