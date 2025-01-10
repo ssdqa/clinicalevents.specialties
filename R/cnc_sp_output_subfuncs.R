@@ -573,7 +573,7 @@ cnc_sp_ms_anom_cs<-function(process_output,
       geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
                              aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
       scale_color_ssdqa(palette = 'diverging', discrete = FALSE) +
-      scale_shape_manual(values=c(20,8))+
+      scale_shape_manual(values=c(19,8))+
       scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
       theme_minimal() +
       #theme(axis.text.x = element_text(angle=60)) +
