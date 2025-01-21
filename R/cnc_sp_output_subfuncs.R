@@ -388,7 +388,7 @@ cnc_sp_ss_anom_la <- function(process_output,
 
   }else{
 
-    anom_to_plot <- anomalize_ss_anom_at(fot_input_tbl = c_added,
+    anom_to_plot <- anomalize_ss_anom_la(fot_input_tbl = c_added,
                                          grp_vars = facet,
                                          time_var = 'time_start',
                                          var_col = ct_col)
