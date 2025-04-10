@@ -61,6 +61,6 @@ cnc_sp_output_example <-
 cnc_sp_output_example
 
 #' Easily convert the graph into an interactive ggiraph or plotly object with
-#' `make_interactive_ssdqa()`
+#' `make_interactive_squba()`
 
-make_interactive_ssdqa(cnc_sp_output_example)
+make_interactive_squba(cnc_sp_output_example)

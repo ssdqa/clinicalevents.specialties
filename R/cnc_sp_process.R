@@ -64,7 +64,7 @@
 #'
 #'
 #' @import argos
-#' @import ssdqa.gen
+#' @import squba.gen
 #' @import dplyr
 #' @import cli
 #' @importFrom purrr reduce

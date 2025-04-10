@@ -16,7 +16,7 @@ cnc_sp_ss_anom_la(
 )
 }
 \arguments{
-\item{process_output}{dataframe output by the corresponding ssdqa check}
+\item{process_output}{dataframe output by the corresponding squba check}
 
 \item{filt_list}{a named list with names equal to the column name/s that must exist in the \code{process_output}
 and values equal to the values on which to filter

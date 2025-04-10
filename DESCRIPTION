@@ -10,7 +10,7 @@ Authors@R:
              comment = c(ORCID = "0000-0001-9523-056X")),
       person("Charles", "Bailey", email = "baileyc@chop.edu", role = c("aut"),
              comment = c(ORCID = "0000-0002-8967-0662")))
-Description: The Clinical Facts and Specialties module, part of the larger SSDQA ecosystem, 
+Description: The Clinical Facts and Specialties module, part of the larger SQUBA ecosystem, 
     identifies provider and/or care site specialties associated with a user-provided clinical fact 
     (i.e. a diagnosis). These results allow users to explore what kind of care a specific
     cohort of patients are receiving and whether this aligns with clinical expectations.
@@ -23,7 +23,7 @@ BugReports: https://github.com/ssdqa/clinicalevents.specialties/issues
 Depends: 
     argos,
     R (>= 2.10),
-    ssdqa.gen
+    squba.gen
 Imports: 
     cli (>= 3.6.3),
     dplyr (>= 1.1.4),
@@ -36,7 +36,7 @@ Imports:
     stringr (>= 1.5.1),
     tidyr (>= 1.3.1),
     timetk (>= 2.9.0)
-Remotes: PEDSnet/argos, ssdqa/ssdqa.gen
+Remotes: PEDSnet/argos, ssdqa/squba.gen
 LazyData: true
 Suggests: 
     DBI,
