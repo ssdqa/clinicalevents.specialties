@@ -7,10 +7,8 @@
 cnc_sp_output(
   cnc_sp_process_output,
   cnc_sp_process_names,
-  multi_or_single_site,
-  anomaly_or_exploratory,
-  time = FALSE,
-  facet_vars,
+  output_function,
+  facet_vars = NULL,
   top_n = 15,
   n_mad = 3L,
   specialty_filter = NULL,
@@ -26,15 +24,8 @@ expected to minimally contain the columns:
 - specialty_name: the assigned classification
 this table will be joined to \code{cnc_sp_process_output}, so all specialty_concept_id in the \code{conc_process_output} should be in \code{conc_process_names}}
 
-\item{multi_or_single_site}{string indicating whether to generate output for single site or multiple site checks:
-- 'multi' for multiple
-- 'single' for single}
-
-\item{anomaly_or_exploratory}{string indicating whether to generate output for anomaly detection or exploratory analysis:
-- 'anomaly' for anomaly detection
-- 'exploratory' for exploratory analysis}
-
-\item{time}{TRUE if should have a time dimension}
+\item{output_function}{the name of the output function to be executed; this is provided in the message
+printed to the console after \code{cnc_sp_process} is finished running}
 
 \item{facet_vars}{vector of variable names to facet by}
 
@@ -99,6 +90,7 @@ cnc_sp_concept_tbl <- dplyr::tibble(domain = 'Hypertension',
 cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
                                          omop_or_pcornet = 'omop',
                                          multi_or_single_site = 'single',
+                                         anomaly_or_exploratory = 'exploratory',
                                          codeset_tbl = cnc_sp_concept_tbl,
                                          visit_type_tbl = cnc_sp_visit_tbl,
                                          time = FALSE)
@@ -113,9 +105,7 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names \%>\%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                multi_or_single_site = 'single',
-                anomaly_or_exploratory = 'exploratory',
-                time = FALSE,
+                output_function = 'cnc_sp_ss_exp_cs',
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example

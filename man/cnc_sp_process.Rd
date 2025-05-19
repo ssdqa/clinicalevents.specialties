@@ -6,7 +6,8 @@
 \usage{
 cnc_sp_process(
   cohort,
-  multi_or_single_site = "multi",
+  multi_or_single_site = "single",
+  anomaly_or_exploratory = "exploratory",
   omop_or_pcornet,
   age_groups = NULL,
   codeset_tbl,
@@ -32,6 +33,10 @@ cnc_sp_process(
 \item{multi_or_single_site}{Option to run the function on a single vs multiple sites
 - \code{single}: run on a single site, or treat all of the sites as one
 - \code{multi}: run on a group of sites, treating each site separately}
+
+\item{anomaly_or_exploratory}{string indicating whether to generate output for anomaly detection or exploratory analysis:
+- \code{anomaly} for anomaly detection
+- \code{exploratory} for exploratory analysis}
 
 \item{omop_or_pcornet}{Option to run the function using the OMOP or PCORnet CDM as the default CDM
 \itemize{
@@ -149,6 +154,7 @@ cnc_sp_concept_tbl <- dplyr::tibble(domain = 'Hypertension',
 cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
                                          omop_or_pcornet = 'omop',
                                          multi_or_single_site = 'single',
+                                         anomaly_or_exploratory = 'exploratory',
                                          codeset_tbl = cnc_sp_concept_tbl,
                                          visit_type_tbl = cnc_sp_visit_tbl,
                                          time = FALSE)
@@ -163,9 +169,7 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names \%>\%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                multi_or_single_site = 'single',
-                anomaly_or_exploratory = 'exploratory',
-                time = FALSE,
+                output_function = 'cnc_sp_ss_exp_cs',
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example

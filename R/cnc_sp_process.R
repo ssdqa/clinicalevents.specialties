@@ -15,6 +15,9 @@
 #' @param multi_or_single_site Option to run the function on a single vs multiple sites
 #'                      - `single`: run on a single site, or treat all of the sites as one
 #'                      - `multi`: run on a group of sites, treating each site separately
+#' @param anomaly_or_exploratory string indicating whether to generate output for anomaly detection or exploratory analysis:
+#'                          - `anomaly` for anomaly detection
+#'                          - `exploratory` for exploratory analysis
 #' @param omop_or_pcornet Option to run the function using the OMOP or PCORnet CDM as the default CDM
 #' - `omop`: run the [cnc_sp_process_omop()] function against an OMOP CDM instance
 #' - `pcornet`: run the [cnc_sp_process_pcornet()] function against a PCORnet CDM instance
@@ -76,7 +79,8 @@
 #'
 #'
 cnc_sp_process <- function(cohort,
-                           multi_or_single_site='multi',
+                           multi_or_single_site = 'single',
+                           anomaly_or_exploratory = 'exploratory',
                            omop_or_pcornet,
                            age_groups=NULL,
                            codeset_tbl,
@@ -135,8 +139,8 @@ cnc_sp_process <- function(cohort,
   }else{cli::cli_abort('Invalid argument for {.code omop_or_pcornet}: this function is only compatible with {.code omop} or {.code pcornet}')}
 
 
-  # cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
-  #                      output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
+  cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
+                       output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
 
   return(cnc_sp_rslt)
 

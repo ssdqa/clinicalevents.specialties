@@ -12,13 +12,8 @@
 #'                                - specialty_concept_id: unchanged from the `cnc_sp_process` output
 #'                                - specialty_name: the assigned classification
 #'                              this table will be joined to `cnc_sp_process_output`, so all specialty_concept_id in the `conc_process_output` should be in `conc_process_names`
-#' @param multi_or_single_site string indicating whether to generate output for single site or multiple site checks:
-#'                          - 'multi' for multiple
-#'                          - 'single' for single
-#' @param anomaly_or_exploratory string indicating whether to generate output for anomaly detection or exploratory analysis:
-#'                          - 'anomaly' for anomaly detection
-#'                          - 'exploratory' for exploratory analysis
-#' @param time TRUE if should have a time dimension
+#' @param output_function the name of the output function to be executed; this is provided in the message
+#'                        printed to the console after `cnc_sp_process` is finished running
 #' @param facet_vars vector of variable names to facet by
 #' @param top_n integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check
 #' @param specialty_filter an optional filter to apply to the specialty_name field to narrow down results
@@ -35,14 +30,17 @@
 #'
 cnc_sp_output <- function(cnc_sp_process_output,
                           cnc_sp_process_names,
-                          multi_or_single_site,
-                          anomaly_or_exploratory,
-                          time=FALSE,
-                          facet_vars,
+                          output_function,
+                          facet_vars=NULL,
                           top_n=15,
                           n_mad=3L,
                           specialty_filter=NULL,
                           p_value=0.9){
+
+  # pull apart output function
+  if(grepl('_ms_', output_function)){multi_or_single_site <- 'multi'}else{multi_or_single_site <- 'single'}
+  if(grepl('_exp_', output_function)){anomaly_or_exploratory <- 'exploratory'}else{anomaly_or_exploratory <- 'anomaly'}
+  if(grepl('_la', output_function)){time <- TRUE}else{time <- FALSE}
 
   # determine color/fill value based on type of plot to be produced
   if((multi_or_single_site=='single'&anomaly_or_exploratory=='exploratory')|
@@ -215,6 +213,12 @@ cnc_sp_output <- function(cnc_sp_process_output,
                                            facet=facet_vars)
     }else{
       # not over time
+      conc_output_pp <- insert_top_n_indicator(dat=conc_output_pp,
+                                               gp_cols=c('site', facet_vars),
+                                               val_col="prop",
+                                               n=top_n)%>%
+        filter(top_n_indicator)
+
       conc_output_plot <- cnc_sp_ms_exp_cs(data_tbl=conc_output_pp,
                                            facet = facet_vars)
     }

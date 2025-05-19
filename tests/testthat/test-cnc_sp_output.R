@@ -15,9 +15,7 @@ test_that('single site, exploratory, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'single',
-                                anomaly_or_exploratory = 'exploratory',
-                                time = FALSE,
+                                output_function = 'cnc_sp_ss_exp_cs',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -40,9 +38,7 @@ test_that('single site, anomaly, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'single',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = FALSE,
+                                output_function = 'cnc_sp_ss_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -65,9 +61,7 @@ test_that('multi site, exploratory, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'multi',
-                                anomaly_or_exploratory = 'exploratory',
-                                time = FALSE,
+                                output_function = 'cnc_sp_ms_exp_cs',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -90,9 +84,7 @@ test_that('multi site, anomaly, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'multi',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = FALSE,
+                                output_function = 'cnc_sp_ms_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -110,9 +102,7 @@ test_that('multi site, anomaly, no time', {
 
   expect_warning(cnc_sp_output(cnc_sp_process_output = cnc_count_input %>% mutate(num_visits = 10),
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'multi',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = FALSE,
+                                output_function = 'cnc_sp_ms_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -139,9 +129,7 @@ test_that('single site, exploratory, across time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'single',
-                                anomaly_or_exploratory = 'exploratory',
-                                time = TRUE,
+                                output_function = 'cnc_sp_ss_exp_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -167,9 +155,7 @@ test_that('single site, anomaly, across time -- year', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'single',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = TRUE,
+                                output_function = 'cnc_sp_ss_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -195,9 +181,7 @@ test_that('single site, anomaly, across time -- month', {
 
   expect_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'single',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = TRUE,
+                                output_function = 'cnc_sp_ss_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -224,9 +208,7 @@ test_that('multi site, exploratory, across time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'multi',
-                                anomaly_or_exploratory = 'exploratory',
-                                time = TRUE,
+                                output_function = 'cnc_sp_ms_exp_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -252,9 +234,7 @@ test_that('multi site, anomaly, across time', {
 
   expect_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                multi_or_single_site = 'multi',
-                                anomaly_or_exploratory = 'anomaly',
-                                time = TRUE,
+                                output_function = 'cnc_sp_ms_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 

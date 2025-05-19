@@ -39,6 +39,7 @@ cnc_sp_concept_tbl <- dplyr::tibble(domain = 'Hypertension',
 cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
                                          omop_or_pcornet = 'omop',
                                          multi_or_single_site = 'single',
+                                         anomaly_or_exploratory = 'exploratory',
                                          codeset_tbl = cnc_sp_concept_tbl,
                                          visit_type_tbl = cnc_sp_visit_tbl,
                                          time = FALSE)
@@ -53,9 +54,7 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names %>%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                multi_or_single_site = 'single',
-                anomaly_or_exploratory = 'exploratory',
-                time = FALSE,
+                output_function = 'cnc_sp_ss_exp_cs',
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example
