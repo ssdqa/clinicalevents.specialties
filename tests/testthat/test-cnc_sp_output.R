@@ -6,7 +6,9 @@ test_that('single site, exploratory, no time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ss_exp_cs','cnc_sp_ss_exp_cs','cnc_sp_ss_exp_cs',
+                                                         'cnc_sp_ss_exp_cs','cnc_sp_ss_exp_cs','cnc_sp_ss_exp_cs'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -15,7 +17,7 @@ test_that('single site, exploratory, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ss_exp_cs',
+                                # output_function = 'cnc_sp_ss_exp_cs',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -29,7 +31,9 @@ test_that('single site, anomaly, no time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ss_anom_cs','cnc_sp_ss_anom_cs','cnc_sp_ss_anom_cs',
+                                                         'cnc_sp_ss_anom_cs','cnc_sp_ss_anom_cs','cnc_sp_ss_anom_cs'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -38,7 +42,7 @@ test_that('single site, anomaly, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ss_anom_cs',
+                                # output_function = 'cnc_sp_ss_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -52,7 +56,9 @@ test_that('multi site, exploratory, no time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ms_exp_cs','cnc_sp_ms_exp_cs','cnc_sp_ms_exp_cs',
+                                                         'cnc_sp_ms_exp_cs','cnc_sp_ms_exp_cs','cnc_sp_ms_exp_cs'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -61,7 +67,7 @@ test_that('multi site, exploratory, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ms_exp_cs',
+                                # output_function = 'cnc_sp_ms_exp_cs',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -75,7 +81,9 @@ test_that('multi site, anomaly, no time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs',
+                                                         'cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -84,7 +92,7 @@ test_that('multi site, anomaly, no time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ms_anom_cs',
+                                # output_function = 'cnc_sp_ms_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -93,7 +101,9 @@ test_that('multi site, anomaly, no time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs',
+                                                         'cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs','cnc_sp_ms_anom_cs'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,1,2,3),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -102,7 +112,7 @@ test_that('multi site, anomaly, no time', {
 
   expect_warning(cnc_sp_output(cnc_sp_process_output = cnc_count_input %>% mutate(num_visits = 10),
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ms_anom_cs',
+                                # output_function = 'cnc_sp_ms_anom_cs',
                                 facet_vars = NULL,
                                 specialty_filter = NULL))
 
@@ -120,7 +130,9 @@ test_that('single site, exploratory, across time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ss_exp_la','cnc_sp_ss_exp_la','cnc_sp_ss_exp_la',
+                                                         'cnc_sp_ss_exp_la','cnc_sp_ss_exp_la','cnc_sp_ss_exp_la'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -129,7 +141,7 @@ test_that('single site, exploratory, across time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ss_exp_la',
+                                # output_function = 'cnc_sp_ss_exp_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -146,7 +158,9 @@ test_that('single site, anomaly, across time -- year', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ss_anom_la','cnc_sp_ss_anom_la','cnc_sp_ss_anom_la',
+                                                         'cnc_sp_ss_anom_la','cnc_sp_ss_anom_la','cnc_sp_ss_anom_la'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -155,7 +169,7 @@ test_that('single site, anomaly, across time -- year', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ss_anom_la',
+                                # output_function = 'cnc_sp_ss_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -172,7 +186,9 @@ test_that('single site, anomaly, across time -- month', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ss_anom_la','cnc_sp_ss_anom_la','cnc_sp_ss_anom_la',
+                                                         'cnc_sp_ss_anom_la','cnc_sp_ss_anom_la','cnc_sp_ss_anom_la'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -181,7 +197,7 @@ test_that('single site, anomaly, across time -- month', {
 
   expect_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ss_anom_la',
+                                # output_function = 'cnc_sp_ss_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -199,7 +215,9 @@ test_that('multi site, exploratory, across time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ms_exp_la','cnc_sp_ms_exp_la','cnc_sp_ms_exp_la',
+                                                         'cnc_sp_ms_exp_la','cnc_sp_ms_exp_la','cnc_sp_ms_exp_la'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -208,7 +226,7 @@ test_that('multi site, exploratory, across time', {
 
   expect_no_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ms_exp_la',
+                                # output_function = 'cnc_sp_ms_exp_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 
@@ -225,7 +243,9 @@ test_that('multi site, anomaly, across time', {
                                    'cluster' = c('test','test','test','test','test','test'),
                                    'codeset_name' = c('dx_test','dx_test','dx_test',
                                                       'dx_test','dx_test','dx_test'),
-                                   'num_visits' = c(10,20,30,40,50,60))
+                                   'num_visits' = c(10,20,30,40,50,60),
+                                   'output_function' = c('cnc_sp_ms_anom_la','cnc_sp_ms_anom_la','cnc_sp_ms_anom_la',
+                                                         'cnc_sp_ms_anom_la','cnc_sp_ms_anom_la','cnc_sp_ms_anom_la'))
 
   cnc_spec_input <- dplyr::tibble('specialty_concept_id' = c(1,2,3,4,5,6),
                                   'specialty_concept_name' = c('heme', 'heme2', 'heme3',
@@ -234,7 +254,7 @@ test_that('multi site, anomaly, across time', {
 
   expect_error(cnc_sp_output(cnc_sp_process_output = cnc_count_input,
                                 cnc_sp_process_names = cnc_spec_input,
-                                output_function = 'cnc_sp_ms_anom_la',
+                                # output_function = 'cnc_sp_ms_anom_la',
                                 facet_vars = NULL,
                                 specialty_filter = c('heme', 'onco')))
 

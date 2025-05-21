@@ -6,20 +6,18 @@
 #' be adjusted by the user after the graph has been output using `+ theme()`. Most graphs can
 #' also be made interactive using `make_interactive_squba()`
 #'
-#' @param cnc_sp_process_output output from the `cnc_sp_process` function
-#' @param cnc_sp_process_names classified names from the output from the `cnc_sp_process` function,
+#' @param cnc_sp_process_output *tabular input* | output from the `cnc_sp_process` function
+#' @param cnc_sp_process_names *tabular input* | classified names from the output from the `cnc_sp_process` function,
 #'                              expected to minimally contain the columns:
 #'                                - specialty_concept_id: unchanged from the `cnc_sp_process` output
 #'                                - specialty_name: the assigned classification
 #'                              this table will be joined to `cnc_sp_process_output`, so all specialty_concept_id in the `conc_process_output` should be in `conc_process_names`
-#' @param output_function the name of the output function to be executed; this is provided in the message
-#'                        printed to the console after `cnc_sp_process` is finished running
-#' @param facet_vars vector of variable names to facet by
-#' @param top_n integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check
-#' @param specialty_filter an optional filter to apply to the specialty_name field to narrow down results
-#' @param n_mad number of MAD from the median for which to flag anomalies
-#'                defaults to 3
-#' @param p_value the p value to be used as a threshold in the multi-site anomaly detection analysis
+#' @param facet_vars *vector* | vector of variable names to facet by
+#' @param top_n *integer* | integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check
+#' @param specialty_filter *string or vector* | an optional filter to apply to the specialty_name field to narrow down results
+#' @param n_mad *integer* | number of MAD from the median for which to flag anomalies
+#'              defaults to 3
+#' @param p_value *numeric* | the p value to be used as a threshold in the multi-site anomaly detection analysis
 #'
 #' @return the corresponding visualization/s for the site level (multi/single), time dimension,
 #'         and analysis level (exploratory/anomaly detection) specified
@@ -30,12 +28,14 @@
 #'
 cnc_sp_output <- function(cnc_sp_process_output,
                           cnc_sp_process_names,
-                          output_function,
                           facet_vars=NULL,
                           top_n=15,
                           n_mad=3L,
                           specialty_filter=NULL,
                           p_value=0.9){
+
+  # extract output function
+  output_function <- cnc_sp_process_output %>% collect() %>% distinct(output_function) %>% pull()
 
   # pull apart output function
   if(grepl('_ms_', output_function)){multi_or_single_site <- 'multi'}else{multi_or_single_site <- 'single'}

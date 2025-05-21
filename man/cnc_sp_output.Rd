@@ -7,7 +7,6 @@
 cnc_sp_output(
   cnc_sp_process_output,
   cnc_sp_process_names,
-  output_function,
   facet_vars = NULL,
   top_n = 15,
   n_mad = 3L,
@@ -16,27 +15,24 @@ cnc_sp_output(
 )
 }
 \arguments{
-\item{cnc_sp_process_output}{output from the \code{cnc_sp_process} function}
+\item{cnc_sp_process_output}{\emph{tabular input} | output from the \code{cnc_sp_process} function}
 
-\item{cnc_sp_process_names}{classified names from the output from the \code{cnc_sp_process} function,
+\item{cnc_sp_process_names}{\emph{tabular input} | classified names from the output from the \code{cnc_sp_process} function,
 expected to minimally contain the columns:
 - specialty_concept_id: unchanged from the \code{cnc_sp_process} output
 - specialty_name: the assigned classification
 this table will be joined to \code{cnc_sp_process_output}, so all specialty_concept_id in the \code{conc_process_output} should be in \code{conc_process_names}}
 
-\item{output_function}{the name of the output function to be executed; this is provided in the message
-printed to the console after \code{cnc_sp_process} is finished running}
+\item{facet_vars}{\emph{vector} | vector of variable names to facet by}
 
-\item{facet_vars}{vector of variable names to facet by}
+\item{top_n}{\emph{integer} | integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check}
 
-\item{top_n}{integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check}
-
-\item{n_mad}{number of MAD from the median for which to flag anomalies
+\item{n_mad}{\emph{integer} | number of MAD from the median for which to flag anomalies
 defaults to 3}
 
-\item{specialty_filter}{an optional filter to apply to the specialty_name field to narrow down results}
+\item{specialty_filter}{\emph{string or vector} | an optional filter to apply to the specialty_name field to narrow down results}
 
-\item{p_value}{the p value to be used as a threshold in the multi-site anomaly detection analysis}
+\item{p_value}{\emph{numeric} | the p value to be used as a threshold in the multi-site anomaly detection analysis}
 }
 \value{
 the corresponding visualization/s for the site level (multi/single), time dimension,
@@ -105,7 +101,6 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names \%>\%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                output_function = 'cnc_sp_ss_exp_cs',
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example

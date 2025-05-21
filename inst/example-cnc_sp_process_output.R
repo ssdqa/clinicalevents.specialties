@@ -54,7 +54,6 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names %>%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                output_function = 'cnc_sp_ss_exp_cs',
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example
