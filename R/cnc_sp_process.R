@@ -7,51 +7,56 @@
 #' (with user-provided groupings in `visit_type_tbl`), cluster
 #' (an additional column added to `codeset_tbl` with subgroupings), or time
 #'
-#' @param cohort - A dataframe with the cohort of patients for your study. Should include the columns:
-#' - `site`
-#' - `person_id`
-#' - `start_date`
-#' - `end_date`
-#' @param multi_or_single_site Option to run the function on a single vs multiple sites
+#' @param cohort *tabular input* | A dataframe with the cohort of patients for your study. Should include the columns:
+#' - `site` | *character*
+#' - `person_id` / `patid` | *integer* / *character*
+#' - `start_date` | *date*
+#' - `end_date` | *date*
+#' @param multi_or_single_site *string* | Option to run the function on a single vs multiple sites
 #'                      - `single`: run on a single site, or treat all of the sites as one
 #'                      - `multi`: run on a group of sites, treating each site separately
-#' @param omop_or_pcornet Option to run the function using the OMOP or PCORnet CDM as the default CDM
+#' @param anomaly_or_exploratory *string* | string indicating whether to generate output for anomaly detection or exploratory analysis:
+#'                          - `anomaly` for anomaly detection
+#'                          - `exploratory` for exploratory analysis
+#' @param omop_or_pcornet *string* | Option to run the function using the OMOP or PCORnet CDM as the default CDM
 #' - `omop`: run the [cnc_sp_process_omop()] function against an OMOP CDM instance
 #' - `pcornet`: run the [cnc_sp_process_pcornet()] function against a PCORnet CDM instance
-#' @param age_groups If you would like to stratify the results by age group,  create a table or CSV file with the following
+#' @param age_groups *tabular input* | If you would like to stratify the results by age group,  create a table or CSV file with the following
 #'                   columns and include it as the `age_groups` function parameter:
-#' - `min_age`: the minimum age for the group (i.e. 10)
-#' - `max_age`: the maximum age for the group (i.e. 20)
-#' - `group`: a string label for the group (i.e. 10-20, Young Adult, etc.)
+#' - `min_age` | *integer* | the minimum age for the group (i.e. 10)
+#' - `max_age` | *integer* | the maximum age for the group (i.e. 20)
+#' - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
 #'
 #' If you would *not* like to stratify by age group, leave the argument as NULL
-#' @param codeset_tbl table in the specs directory with the columns:
-#' - `domain`: name of the domain
-#' - `domain_tbl`: name of the cdm_tbl
-#' - `concept_field`: column name in the domain_tbl for which to search the codeset concept_ids
-#' - `date_field`: column name in the domain_tbl to be used for time-based filtering
-#' - `codeset_name`: name of a codeset that exists as a csv file in the specs directory.
+#' @param codeset_tbl *tabular input* | table in the specs directory with the columns:
+#' - `domain` | *character* | name of the domain
+#' - `domain_tbl` | *character* | name of the cdm_tbl
+#' - `concept_field` | *character* | column name in the domain_tbl for which to search the codeset concept_ids
+#' - `date_field` | *character* | column name in the domain_tbl to be used for time-based filtering
+#' - `codeset_name` | *character* | name of a codeset that exists as a csv file in the specs directory.
 #'
 #' The codeset can optionally contain a `cluster` column specifying subgroups of the codeset,
 #' and if so, the results will be stratified by cluster
 #'
-#' @param care_site TRUE if want to look at care_site specialty (specialty_concept_id in the care_site table)
+#' @param care_site *boolean* | TRUE if want to look at care_site specialty
+#'                  (specialty_concept_id in the care_site table / facility_type in the encounter table)
 #'                  FALSE if do not want to look at care_site specialty
-#' @param provider TRUE if want to look at provider specialty (specialty_concept_id in the provider table)
+#' @param provider *boolean* | TRUE if want to look at provider specialty
+#'                  (specialty_concept_id / provider_specialty_primary in the provider table)
 #'                  FALSE if do not want to look at provider specialty
 #'                  IF both `provider` and `care_site` are both TRUE,
 #'                  provider specialty will be prioritized if provider and care_site are discordant for the visit
-#' @param visit_detail OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
-#'                                  FALSE if want to use visit_occurrence table (default)
-#' @param visit_type_tbl a table that defines available visit types that are called in `visit_types.` defaults to the provided
-#'                           `cnc_sp_visit_file_(omop/pcornet)` file, which contains the following fields:
+#' @param visit_detail *boolean* | OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
+#'                     FALSE if want to use visit_occurrence table (default)
+#' @param visit_type_tbl *tabular input* | a table that defines available visit types that are called in `visit_types.` defaults to the provided
+#'                       `cnc_sp_visit_file_(omop/pcornet)` file, which contains the following fields:
 #' - `visit_concept_id` / `visit_detail_concept_id` or `enc_type`: the visit_(detail)_concept_id or enc_type that represents the visit type of interest (i.e. 9201 or IP)
 #' - `visit_type`: the string label to describe the visit type; this label can be used multiple times
 #'                 within the file if multiple visit_concept_ids/enc_types represent the visit type
-#' @param time TRUE if results should be over time. Defaults to FALSE
-#' @param time_span if time=TRUE, vector containing minimum and maximum dates over which to measure
-#' @param time_period if time=TRUE, indicates time period (e.g. 'year', 'month') over which to measure
-#' @param vocab_tbl location of vocabulary table containing concept_id to concept_name mapping. If a vocabulary table is not available, will default to NULL
+#' @param time *boolean* | TRUE if results should be over time. Defaults to FALSE
+#' @param time_span *vector - length 2* | if time=TRUE, vector containing minimum and maximum dates over which to measure
+#' @param time_period *string* | if time=TRUE, indicates time period (e.g. 'year', 'month') over which to measure
+#' @param vocab_tbl *tabular input* | location of vocabulary table containing concept_id to concept_name mapping. If a vocabulary table is not available, will default to NULL
 #' @return 2 tables:
 #'            1 table containing all of the specialties in the results of the
 #'            DQ check, with the columns:
@@ -76,7 +81,8 @@
 #'
 #'
 cnc_sp_process <- function(cohort,
-                           multi_or_single_site='multi',
+                           multi_or_single_site = 'single',
+                           anomaly_or_exploratory = 'exploratory',
                            omop_or_pcornet,
                            age_groups=NULL,
                            codeset_tbl,
@@ -135,12 +141,13 @@ cnc_sp_process <- function(cohort,
   }else{cli::cli_abort('Invalid argument for {.code omop_or_pcornet}: this function is only compatible with {.code omop} or {.code pcornet}')}
 
 
-  # cli::cli_inform(paste0(col_green('Based on your chosen parameters, we recommend using the following
-  #                      output function in cnc_sp_output: '), col_blue(style_bold(output_type,'.'))))
+  cli::boxx(c('You can optionally use this dataframe in the accompanying',
+  '`scv_output` function. Here are the parameters you will need:', '', output_type$vector, '',
+  'See ?scv_output for more details.'), padding = c(0,1,0,1),
+  header = cli::col_cyan('Output Function Details'))
+
+  cnc_sp_rslt[[2]] <- cnc_sp_rslt[[2]] %>% mutate(output_function = output_type$string)
 
   return(cnc_sp_rslt)
-
-
-
 
 }

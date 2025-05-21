@@ -6,7 +6,8 @@
 \usage{
 cnc_sp_process(
   cohort,
-  multi_or_single_site = "multi",
+  multi_or_single_site = "single",
+  anomaly_or_exploratory = "exploratory",
   omop_or_pcornet,
   age_groups = NULL,
   codeset_tbl,
@@ -21,58 +22,64 @@ cnc_sp_process(
 )
 }
 \arguments{
-\item{cohort}{\itemize{
-\item A dataframe with the cohort of patients for your study. Should include the columns:
-\item \code{site}
-\item \code{person_id}
-\item \code{start_date}
-\item \code{end_date}
+\item{cohort}{\emph{tabular input} | A dataframe with the cohort of patients for your study. Should include the columns:
+\itemize{
+\item \code{site} | \emph{character}
+\item \code{person_id} / \code{patid} | \emph{integer} / \emph{character}
+\item \code{start_date} | \emph{date}
+\item \code{end_date} | \emph{date}
 }}
 
-\item{multi_or_single_site}{Option to run the function on a single vs multiple sites
+\item{multi_or_single_site}{\emph{string} | Option to run the function on a single vs multiple sites
 - \code{single}: run on a single site, or treat all of the sites as one
 - \code{multi}: run on a group of sites, treating each site separately}
 
-\item{omop_or_pcornet}{Option to run the function using the OMOP or PCORnet CDM as the default CDM
+\item{anomaly_or_exploratory}{\emph{string} | string indicating whether to generate output for anomaly detection or exploratory analysis:
+- \code{anomaly} for anomaly detection
+- \code{exploratory} for exploratory analysis}
+
+\item{omop_or_pcornet}{\emph{string} | Option to run the function using the OMOP or PCORnet CDM as the default CDM
 \itemize{
 \item \code{omop}: run the \code{\link[=cnc_sp_process_omop]{cnc_sp_process_omop()}} function against an OMOP CDM instance
 \item \code{pcornet}: run the \code{\link[=cnc_sp_process_pcornet]{cnc_sp_process_pcornet()}} function against a PCORnet CDM instance
 }}
 
-\item{age_groups}{If you would like to stratify the results by age group,  create a table or CSV file with the following
+\item{age_groups}{\emph{tabular input} | If you would like to stratify the results by age group,  create a table or CSV file with the following
 columns and include it as the \code{age_groups} function parameter:
 \itemize{
-\item \code{min_age}: the minimum age for the group (i.e. 10)
-\item \code{max_age}: the maximum age for the group (i.e. 20)
-\item \code{group}: a string label for the group (i.e. 10-20, Young Adult, etc.)
+\item \code{min_age} | \emph{integer} | the minimum age for the group (i.e. 10)
+\item \code{max_age} | \emph{integer} | the maximum age for the group (i.e. 20)
+\item \code{group} | \emph{character} | a string label for the group (i.e. 10-20, Young Adult, etc.)
 }
 
 If you would \emph{not} like to stratify by age group, leave the argument as NULL}
 
-\item{codeset_tbl}{table in the specs directory with the columns:
+\item{codeset_tbl}{\emph{tabular input} | table in the specs directory with the columns:
 \itemize{
-\item \code{domain}: name of the domain
-\item \code{domain_tbl}: name of the cdm_tbl
-\item \code{concept_field}: column name in the domain_tbl for which to search the codeset concept_ids
-\item \code{date_field}: column name in the domain_tbl to be used for time-based filtering
-\item \code{codeset_name}: name of a codeset that exists as a csv file in the specs directory.
+\item \code{domain} | \emph{character} | name of the domain
+\item \code{domain_tbl} | \emph{character} | name of the cdm_tbl
+\item \code{concept_field} | \emph{character} | column name in the domain_tbl for which to search the codeset concept_ids
+\item \code{date_field} | \emph{character} | column name in the domain_tbl to be used for time-based filtering
+\item \code{codeset_name} | \emph{character} | name of a codeset that exists as a csv file in the specs directory.
 }
 
 The codeset can optionally contain a \code{cluster} column specifying subgroups of the codeset,
 and if so, the results will be stratified by cluster}
 
-\item{care_site}{TRUE if want to look at care_site specialty (specialty_concept_id in the care_site table)
+\item{care_site}{\emph{boolean} | TRUE if want to look at care_site specialty
+(specialty_concept_id in the care_site table / facility_type in the encounter table)
 FALSE if do not want to look at care_site specialty}
 
-\item{provider}{TRUE if want to look at provider specialty (specialty_concept_id in the provider table)
+\item{provider}{\emph{boolean} | TRUE if want to look at provider specialty
+(specialty_concept_id / provider_specialty_primary in the provider table)
 FALSE if do not want to look at provider specialty
 IF both \code{provider} and \code{care_site} are both TRUE,
 provider specialty will be prioritized if provider and care_site are discordant for the visit}
 
-\item{visit_detail}{OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
+\item{visit_detail}{\emph{boolean} | OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
 FALSE if want to use visit_occurrence table (default)}
 
-\item{visit_type_tbl}{a table that defines available visit types that are called in \code{visit_types.} defaults to the provided
+\item{visit_type_tbl}{\emph{tabular input} | a table that defines available visit types that are called in \code{visit_types.} defaults to the provided
 \code{cnc_sp_visit_file_(omop/pcornet)} file, which contains the following fields:
 \itemize{
 \item \code{visit_concept_id} / \code{visit_detail_concept_id} or \code{enc_type}: the visit_(detail)_concept_id or enc_type that represents the visit type of interest (i.e. 9201 or IP)
@@ -80,13 +87,13 @@ FALSE if want to use visit_occurrence table (default)}
 within the file if multiple visit_concept_ids/enc_types represent the visit type
 }}
 
-\item{time}{TRUE if results should be over time. Defaults to FALSE}
+\item{time}{\emph{boolean} | TRUE if results should be over time. Defaults to FALSE}
 
-\item{time_span}{if time=TRUE, vector containing minimum and maximum dates over which to measure}
+\item{time_span}{\emph{vector - length 2} | if time=TRUE, vector containing minimum and maximum dates over which to measure}
 
-\item{time_period}{if time=TRUE, indicates time period (e.g. 'year', 'month') over which to measure}
+\item{time_period}{\emph{string} | if time=TRUE, indicates time period (e.g. 'year', 'month') over which to measure}
 
-\item{vocab_tbl}{location of vocabulary table containing concept_id to concept_name mapping. If a vocabulary table is not available, will default to NULL}
+\item{vocab_tbl}{\emph{tabular input} | location of vocabulary table containing concept_id to concept_name mapping. If a vocabulary table is not available, will default to NULL}
 }
 \value{
 2 tables:
@@ -149,6 +156,7 @@ cnc_sp_concept_tbl <- dplyr::tibble(domain = 'Hypertension',
 cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
                                          omop_or_pcornet = 'omop',
                                          multi_or_single_site = 'single',
+                                         anomaly_or_exploratory = 'exploratory',
                                          codeset_tbl = cnc_sp_concept_tbl,
                                          visit_type_tbl = cnc_sp_visit_tbl,
                                          time = FALSE)
@@ -163,9 +171,6 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names \%>\%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                multi_or_single_site = 'single',
-                anomaly_or_exploratory = 'exploratory',
-                time = FALSE,
                 facet_vars = c('visit_type'))
 
 cnc_sp_output_example
