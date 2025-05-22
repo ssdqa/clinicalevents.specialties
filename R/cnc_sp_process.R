@@ -140,13 +140,12 @@ cnc_sp_process <- function(cohort,
 
   }else{cli::cli_abort('Invalid argument for {.code omop_or_pcornet}: this function is only compatible with {.code omop} or {.code pcornet}')}
 
-
-  cli::boxx(c('You can optionally use this dataframe in the accompanying',
-  '`scv_output` function. Here are the parameters you will need:', '', output_type$vector, '',
-  'See ?scv_output for more details.'), padding = c(0,1,0,1),
-  header = cli::col_cyan('Output Function Details'))
-
   cnc_sp_rslt[[2]] <- cnc_sp_rslt[[2]] %>% mutate(output_function = output_type$string)
+
+  print(cli::boxx(c('You can optionally use this dataframe in the accompanying',
+  '`cnc_sp_output` function. Here are the parameters you will need:', '', output_type$vector, '',
+  'See ?cnc_sp_output for more details.'), padding = c(0,1,0,1),
+  header = cli::col_cyan('Output Function Details')))
 
   return(cnc_sp_rslt)
 
