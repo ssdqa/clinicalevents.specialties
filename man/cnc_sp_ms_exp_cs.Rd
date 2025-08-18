@@ -6,12 +6,17 @@
 Function to produce output for clinical event concordance with specialty
 for multi site, exploratory, not over time}
 \usage{
-cnc_sp_ms_exp_cs(data_tbl, facet = NULL)
+cnc_sp_ms_exp_cs(data_tbl, facet = NULL, large_n = FALSE, large_n_sites = NULL)
 }
 \arguments{
 \item{data_tbl}{table with the data to plot}
 
 \item{facet}{list of one or more variables to facet the plot on}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 a dot plot of specialty against proportion of visits with that specialty

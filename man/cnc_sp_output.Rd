@@ -11,7 +11,9 @@ cnc_sp_output(
   top_n = 15,
   n_mad = 3L,
   specialty_filter = NULL,
-  p_value = 0.9
+  p_value = 0.9,
+  large_n = FALSE,
+  large_n_sites = NULL
 )
 }
 \arguments{
@@ -33,6 +35,11 @@ defaults to 3}
 \item{specialty_filter}{\emph{string or vector} | an optional filter to apply to the specialty_name field to narrow down results}
 
 \item{p_value}{\emph{numeric} | the p value to be used as a threshold in the multi-site anomaly detection analysis}
+
+\item{large_n}{\emph{boolean} | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{\emph{vector} | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 the corresponding visualization/s for the site level (multi/single), time dimension,
