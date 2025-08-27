@@ -5,7 +5,13 @@
 \title{\strong{Multi-Site Anomaly Longitudinal}
 Function to generate output displaying the Euclidean distance between two time series}
 \usage{
-cnc_sp_ms_anom_la(process_output, grp_vars, specialty_filter = NULL)
+cnc_sp_ms_anom_la(
+  process_output,
+  grp_vars,
+  specialty_filter = NULL,
+  large_n = FALSE,
+  large_n_sites = NULL
+)
 }
 \arguments{
 \item{process_output}{output from \code{cnc_sp_process}
@@ -14,6 +20,11 @@ should contain the columns specified in \code{grp_vars}}
 \item{grp_vars}{vector of variables used for grouping when identifying all-site summary statistics}
 
 \item{specialty_filter}{a string indicating the SINGLE specialty of intereset that should be displayed at one time}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 three graphs:

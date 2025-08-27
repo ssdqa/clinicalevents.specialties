@@ -15,4 +15,6 @@ utils::globalVariables(c('site', 'person_id', 'patid', 'start_date',
                          'overall_sd', 'prop', 'provider_specialty_primary', 'providerid',
                          'site_loess', 'specialty_name', 'sumn', 'text_raw', 'text_smooth',
                          'time_end', 'time_start', 'time_increment', 'tooltip',
-                         'top_n_indicator', 'total', 'ucl', 'x', 'y'))
+                         'top_n_indicator', 'total', 'ucl', 'x', 'y', 'zscr', 'closest_site',
+                         'delim', 'farthest_site', 'iqr_val', 'med', 'q1', 'q3', 'nvar',
+                         'site_anoms', 'site_w_anom', 'value'))

@@ -4,7 +4,13 @@
 \alias{cnc_sp_ms_anom_cs}
 \title{\emph{Multi-Site, Anomaly, Cross-Sectional}}
 \usage{
-cnc_sp_ms_anom_cs(process_output, title, text_wrapping_char = 60)
+cnc_sp_ms_anom_cs(
+  process_output,
+  title,
+  text_wrapping_char = 60,
+  large_n = FALSE,
+  large_n_sites = NULL
+)
 }
 \arguments{
 \item{process_output}{the output from the cnc_sp check, summarized to be used in the multi site anomaly detection check}
@@ -12,6 +18,11 @@ cnc_sp_ms_anom_cs(process_output, title, text_wrapping_char = 60)
 \item{title}{text containing the title for the plot}
 
 \item{text_wrapping_char}{the number of characters for the specialty names to be displayed on the plot}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 a dot plot where the shape of the dot represents whether the point is

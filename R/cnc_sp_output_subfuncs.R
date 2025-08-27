@@ -1,14 +1,17 @@
 
 #' @import ggplot2
 #' @import ggiraph
+#' @import gt
 #' @importFrom stringr str_remove_all
 #' @importFrom tidyr tibble
 #' @importFrom tidyr unite
+#' @importFrom tidyr pivot_longer
 #' @importFrom qicharts2 qic
 #' @importFrom timetk plot_anomalies
 #' @importFrom timetk plot_anomalies_decomp
 #' @importFrom plotly layout
 #' @importFrom graphics text
+#' @importFrom patchwork plot_layout
 #'
 NULL
 
@@ -109,28 +112,73 @@ cnc_sp_ss_exp_cs <- function(data_tbl,
 #'
 #' @param data_tbl table with the data to plot
 #' @param facet list of one or more variables to facet the plot on
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @return a dot plot of specialty against proportion of visits with that specialty
 #'         at each site, with dot color representing site
 #'
 cnc_sp_ms_exp_cs <- function(data_tbl,
-                             facet = NULL){
-  dat_to_plot<-data_tbl%>%
-    mutate(text=paste("Specialty: ",specialty_name,
-                      "\nProportion: ",round(prop,2),
-                      "\nSite: ",site))
-  plt<-ggplot(dat_to_plot, aes(x=specialty_name,
-                  y=prop,
-                  colour=site,
-                  text=text))+
-    geom_point()+
-    scale_color_squba()+
-    coord_flip()+
-    theme_minimal() +
-    facet_wrap((facet)) +
-    labs(x = 'Proportion',
-         y = 'Specialty',
-         color = 'Site')
+                             facet = NULL,
+                             large_n = FALSE,
+                             large_n_sites = NULL){
+  if(large_n){
+    allsite_stats <- data_tbl %>%
+      group_by(specialty_name, !!!syms(facet)) %>%
+      summarise(med = stats::median(prop),
+                q1 = stats::quantile(prop, 0.25),
+                q3 = stats::quantile(prop, 0.75)) %>%
+      pivot_longer(cols = c(med, q1, q3)) %>%
+      mutate(site = case_when(name == 'med' ~ 'All Site Median',
+                              name == 'q1' ~ 'All Site Q1',
+                              name == 'q3' ~ 'All Site Q3'))
+
+    dat_to_plot<-allsite_stats%>%
+      mutate(text=paste("Specialty: ",specialty_name,
+                        "\nProportion: ",round(value,2),
+                        "\nSite: ",site))
+
+    plt<-ggplot(dat_to_plot, aes(x=specialty_name,
+                                 y=value,
+                                 colour=site,
+                                 text=text))+
+      geom_point(shape = 8, size = 3)+
+      scale_color_squba()+
+      coord_flip()+
+      theme_minimal() +
+      facet_wrap((facet)) +
+      labs(x = 'Proportion',
+           y = 'Specialty',
+           color = 'Site')
+
+    if(!is.null(large_n_sites)){plt <- plt + geom_point(data = data_tbl %>%
+                                                          filter(site %in% large_n_sites) %>%
+                                                          mutate(text=paste("Specialty: ",specialty_name,
+                                                                            "\nProportion: ",round(prop,2),
+                                                                            "\nSite: ",site)),
+                                                        aes(y = prop))}
+
+  }else{
+    dat_to_plot<-data_tbl%>%
+      mutate(text=paste("Specialty: ",specialty_name,
+                        "\nProportion: ",round(prop,2),
+                        "\nSite: ",site))
+
+    plt<-ggplot(dat_to_plot, aes(x=specialty_name,
+                                 y=prop,
+                                 colour=site,
+                                 text=text))+
+      geom_point()+
+      scale_color_squba()+
+      coord_flip()+
+      theme_minimal() +
+      facet_wrap((facet)) +
+      labs(x = 'Proportion',
+           y = 'Specialty',
+           color = 'Site')
+  }
+
 
   plt[["metadata"]] <- tibble('pkg_backend' = 'plotly',
                               'tooltip' = TRUE)
@@ -188,28 +236,59 @@ cnc_sp_ss_exp_la <- function(data_tbl,
 #'      for multi site, exploratory, across time
 #' @param data_tbl table which must contain the cols: time_start | codeset_name | specialty_name | site
 #' @param facet if supplied, variable to facet the plot by
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
+#'
 #' @return line plot, with time on x axis, proportion on y, line color determined by site
 #'              with a dotted line for the all-site mean
 cnc_sp_ms_exp_la <- function(data_tbl,
-                             facet=NULL){
+                             facet=NULL,
+                             large_n = FALSE,
+                             large_n_sites = NULL){
   # compute all site mean
-   all_site_mean <- data_tbl%>%
-     group_by(time_start, codeset_name, !!!syms(facet))%>%
-     summarise(prop=mean(prop, na.rm=TRUE))%>%
-     ungroup()%>%
-     mutate(site="all")
+  all_site_mean <- data_tbl%>%
+    group_by(time_start, codeset_name, !!!syms(facet))%>%
+    summarise(prop=mean(prop, na.rm=TRUE))%>%
+    ungroup()%>%
+    mutate(site="all site mean")
 
-   # set up scheme for line types: differentiate "all" from site names
-   site_names<-data_tbl%>%distinct(site)%>%pull()
-   n_sites<-length(site_names)
-   line_vals<-c("dotted",rep("solid",n_sites))
-   line_breaks<-c("all",site_names)
+  if(!large_n){
+    # set up scheme for line types: differentiate "all" from site names
+    site_names<-data_tbl%>%distinct(site)%>%pull()
+    n_sites<-length(site_names)
+    line_vals<-c("dotted",rep("solid",n_sites))
+    line_breaks<-c("all site mean",site_names)
 
-  dat_to_plot<-data_tbl %>%
-    bind_rows(all_site_mean)%>%
-    mutate(text=paste("Site: ",site,
-                      "\nProportion of site's visits: ",round(prop,2),
-                      "\nTime Start: ",time_start))
+    dat_to_plot<-data_tbl %>%
+      bind_rows(all_site_mean)%>%
+      mutate(text=paste("Site: ",site,
+                        "\nProportion of site's visits: ",round(prop,2),
+                        "\nTime Start: ",time_start))
+  }else{
+    if(is.null(large_n_sites)){
+      line_vals<-c("solid")
+      line_breaks<-c("all site mean")
+
+      dat_to_plot<-all_site_mean %>%
+        mutate(text=paste("Site: ",site,
+                          "\nProportion of site's visits: ",round(prop,2),
+                          "\nTime Start: ",time_start))
+    }else{
+      # set up scheme for line types: differentiate "all" from site names
+      site_names<-data_tbl%>%filter(site %in% large_n_sites) %>% distinct(site)%>%pull()
+      n_sites<-length(site_names)
+      line_vals<-c("dotted",rep("solid",n_sites))
+      line_breaks<-c("all site mean",site_names)
+
+      dat_to_plot<-data_tbl %>%
+        filter(site %in% large_n_sites) %>%
+        bind_rows(all_site_mean)%>%
+        mutate(text=paste("Site: ",site,
+                          "\nProportion of site's visits: ",round(prop,2),
+                          "\nTime Start: ",time_start))
+    }
+  }
 
 
   if(is.null(facet)){
@@ -430,6 +509,9 @@ cnc_sp_ss_anom_la <- function(process_output,
 #'                       should contain the columns specified in `grp_vars`
 #' @param grp_vars vector of variables used for grouping when identifying all-site summary statistics
 #' @param specialty_filter a string indicating the SINGLE specialty of intereset that should be displayed at one time
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @return three graphs:
 #'    1) line graph that shows the smoothed proportion of visits with a
@@ -441,7 +523,9 @@ cnc_sp_ss_anom_la <- function(process_output,
 #'
 cnc_sp_ms_anom_la <- function(process_output,
                               grp_vars,
-                              specialty_filter=NULL){
+                              specialty_filter=NULL,
+                              large_n = FALSE,
+                              large_n_sites = NULL){
 
   if(length(specialty_filter) > 1){cli::cli_abort('Please choose one specialty to view for this analysis')}
 
@@ -451,85 +535,144 @@ cnc_sp_ms_anom_la <- function(process_output,
 
   allsites <-
     filt_op %>%
-    select(grp_vars, facet)%>%#time_start,concept_id,mean_allsiteprop)
+    select(grp_vars, facet)%>%
     distinct() %>%
     rename(prop=mean_allsiteprop) %>%
     mutate(site='all site average') %>%
     mutate(text_smooth=paste0("Site: ", site,
-                              "\n","Proportion: ",prop),
+                              "\n","Proportion: ",round(prop, 4)),
            text_raw=paste0("Site: ", site,
-                           "\n","Proportion: ",prop))
+                           "\n","Proportion: ",round(prop, 4)))
+
+  iqr_dat <- filt_op %>%
+    select(grp_vars, facet, prop) %>% distinct() %>%
+    group_by(!!!syms(grp_vars), !!!syms(facet)) %>%
+    summarise(q1 = stats::quantile(prop, 0.25),
+              q3 = stats::quantile(prop, 0.75))
 
   dat_to_plot <-
     filt_op %>%
     mutate(text_smooth=paste0("Site: ", site,
                               "\n","Euclidean Distance from All-Site Mean: ",dist_eucl_mean),
            text_raw=paste0("Site: ", site,
-                           "\n","Site Proportion: ",prop,
+                           "\n","Site Proportion: ",round(prop, 4),
                            "\n","Site Smoothed Proportion: ",site_loess,
                            "\n","Euclidean Distance from All-Site Mean: ",dist_eucl_mean))
 
-  p <- dat_to_plot %>%
-    ggplot(aes(y = prop, x = time_start, color = site, group = site, text = text_smooth)) +
-    geom_line(data=allsites, linewidth=1.1) +
-    geom_smooth(se=TRUE,alpha=0.1,linewidth=0.5, formula = y ~ x) +
-    scale_color_squba() +
-    theme_minimal() +
-    facet_wrap((facet)) +
-    #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
-    labs(y = 'Proportion (Loess)',
-         x = 'Time',
-         title = paste0('Smoothed Proportion of ', specialty_filter, ' Across Time'))
+  if(!large_n){
+    p <- dat_to_plot %>%
+      ggplot(aes(y = prop, x = time_start, color = site, group = site, text = text_smooth)) +
+      geom_line(data=allsites, linewidth=1.1) +
+      geom_smooth(se=TRUE,alpha=0.1,linewidth=0.5, formula = y ~ x) +
+      scale_color_squba() +
+      theme_minimal() +
+      facet_wrap((facet)) +
+      labs(y = 'Proportion (Loess)',
+           x = 'Time',
+           title = paste0('Smoothed Proportion of ', specialty_filter, ' Across Time'))
 
-  q <- dat_to_plot %>%
-    ggplot(aes(y = prop, x = time_start, color = site,
-               group=site, text=text_raw)) +
-    scale_color_squba() +
-    geom_line(data=allsites,linewidth=1.1) +
-    geom_line(linewidth=0.2) +
-    theme_minimal() +
-    facet_wrap((facet)) +
-    #theme(axis.text.x = element_text(angle = 30, vjust = 1, hjust=1)) +
-    labs(x = 'Time',
-         y = 'Proportion',
-         title = paste0('Raw Proportion of ', specialty_filter, ' Across Time'))
+    q <- dat_to_plot %>%
+      ggplot(aes(y = prop, x = time_start, color = site,
+                 group=site, text=text_raw)) +
+      scale_color_squba() +
+      geom_line(data=allsites,linewidth=1.1) +
+      geom_line(linewidth=0.2) +
+      theme_minimal() +
+      facet_wrap((facet)) +
+      labs(x = 'Time',
+           y = 'Proportion',
+           title = paste0('Raw Proportion of ', specialty_filter, ' Across Time'))
 
-  t <- dat_to_plot %>%
-    distinct(site, !!facet, dist_eucl_mean, site_loess) %>%
-    group_by(site, !!facet, dist_eucl_mean) %>%
-    summarise(mean_site_loess = mean(site_loess)) %>%
-    mutate(tooltip = paste0('Site: ', site,
-                            '\nEuclidean Distance: ', dist_eucl_mean,
-                            '\nAverage Loess Proportion: ', mean_site_loess)) %>%
-    ggplot(aes(x = site, y = dist_eucl_mean, fill = mean_site_loess, tooltip = tooltip)) +
-    geom_col_interactive() +
-    facet_wrap((facet)) +
-    # geom_text(aes(label = dist_eucl_mean), vjust = 2, size = 3,
-    #           show.legend = FALSE) +
-    coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
-    guides(theta = guide_axis_theta(angle = 0)) +
-    theme_minimal() +
-    scale_fill_squba(palette = 'diverging', discrete = FALSE) +
-    # theme(legend.position = 'bottom',
-    #       legend.text = element_text(angle = 45, vjust = 0.9, hjust = 1),
-    #       axis.text.x = element_text(face = 'bold')) +
-    labs(fill = 'Avg. Proportion \n(Loess)',
-         y ='Euclidean Distance',
-         x = '',
-         title = paste0('Euclidean Distance for ', specialty_filter))
+    t <- dat_to_plot %>%
+      distinct(site, !!facet, dist_eucl_mean, site_loess) %>%
+      group_by(site, !!facet, dist_eucl_mean) %>%
+      summarise(mean_site_loess = mean(site_loess)) %>%
+      mutate(tooltip = paste0('Site: ', site,
+                              '\nEuclidean Distance: ', dist_eucl_mean,
+                              '\nAverage Loess Proportion: ', mean_site_loess)) %>%
+      ggplot(aes(x = site, y = dist_eucl_mean, fill = mean_site_loess, tooltip = tooltip)) +
+      geom_segment(aes(x = site, xend = site, y = 0, yend = dist_eucl_mean), color = 'navy') +
+      geom_point_interactive(aes(fill = mean_site_loess), shape = 21, size = 4) +
+      facet_wrap((facet)) +
+      coord_radial(r.axis.inside = FALSE, rotate.angle = TRUE) +
+      guides(theta = guide_axis_theta(angle = 0)) +
+      theme_minimal() +
+      scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+      labs(fill = 'Avg. Proportion \n(Loess)',
+           y ='Euclidean Distance',
+           x = '',
+           title = paste0('Euclidean Distance for ', specialty_filter))
 
-  p[['metadata']] <- tibble('pkg_backend' = 'plotly',
-                            'tooltip' = TRUE)
+    p[['metadata']] <- tibble('pkg_backend' = 'plotly',
+                              'tooltip' = TRUE)
 
-  q[['metadata']] <- tibble('pkg_backend' = 'plotly',
-                            'tooltip' = TRUE)
+    q[['metadata']] <- tibble('pkg_backend' = 'plotly',
+                              'tooltip' = TRUE)
 
-  t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
-                            'tooltip' = TRUE)
+    t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
 
-  output <- list(p,
-                 q,
-                 t)
+    output <- list(p,q,t)
+  }else{
+    q <- ggplot(allsites, aes(x = time_start)) +
+      geom_ribbon(data = iqr_dat, aes(ymin = q1, ymax = q3), alpha = 0.2) +
+      geom_line(aes(y = prop, color = site, group = site), linewidth=1.1) +
+      geom_point_interactive(aes(y = prop, color = site, group = site, tooltip=text_raw)) +
+      theme_minimal() +
+      facet_wrap((facet)) +
+      scale_color_squba() +
+      labs(x = 'Time',
+           y = 'Proportion',
+           title = paste0('Proportion of ', specialty_filter, ' Across Time'),
+           subtitle = 'Ribbon boundaries are IQR')
+
+    if(is.null(large_n_sites)){
+
+      t <- dat_to_plot %>%
+        distinct(specialty_name, dist_eucl_mean) %>%
+        ggplot(aes(x = dist_eucl_mean, y = specialty_name)) +
+        geom_boxplot() +
+        geom_point_interactive(color = 'gray',
+                               alpha = 0.75, aes(tooltip = dist_eucl_mean)) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              legend.title = element_blank()) +
+        scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+        labs(x ='Euclidean Distance',
+             y = '',
+             title = paste0('Distribution of Euclidean Distances'))
+
+    }else{
+
+      q <- q + geom_line(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                         aes(y = prop, color = site, group = site),
+                         linewidth=0.2) +
+        geom_point_interactive(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                               aes(y = prop, color = site, group = site, tooltip=text_raw))
+
+      t <- dat_to_plot %>%
+        distinct(specialty_name,dist_eucl_mean) %>%
+        ggplot(aes(x = dist_eucl_mean, y = specialty_name)) +
+        geom_boxplot() +
+        geom_point_interactive(data = dat_to_plot %>% filter(site %in% large_n_sites),
+                               aes(color = site, tooltip = dist_eucl_mean)) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              legend.title = element_blank()) +
+        scale_fill_squba(palette = 'diverging', discrete = FALSE) +
+        scale_color_squba() +
+        labs(x ='Euclidean Distance',
+             y = '',
+             title = paste0('Distribution of Euclidean Distances'))
+    }
+
+    q[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
+    t[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                              'tooltip' = TRUE)
+
+    output <- q + t + plot_layout(ncol = 1, heights = c(5, 1))
+  }
 
   return(output)
 }
@@ -539,6 +682,9 @@ cnc_sp_ms_anom_la <- function(process_output,
 #' @param process_output the output from the cnc_sp check, summarized to be used in the multi site anomaly detection check
 #' @param title text containing the title for the plot
 #' @param text_wrapping_char the number of characters for the specialty names to be displayed on the plot
+#' @param large_n a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites a vector of site names that can optionally generate a filtered visualization
 #'
 #' @return a dot plot where the shape of the dot represents whether the point is
 #'         anomalous, the color of the dot represents the proportion of visits
@@ -547,7 +693,9 @@ cnc_sp_ms_anom_la <- function(process_output,
 #'
 cnc_sp_ms_anom_cs<-function(process_output,
                             title,
-                            text_wrapping_char = 60){
+                            text_wrapping_char = 60,
+                            large_n = FALSE,
+                            large_n_sites = NULL){
 
   cli::cli_div(theme = list(span.code = list(color = 'blue')))
 
@@ -562,76 +710,196 @@ cnc_sp_ms_anom_cs<-function(process_output,
                       "\nMedian proportion: ",round(median_val,2),
                       "\nMAD: ", round(mad_val,2)))
 
-  if(nrow(check_n) > 0){
+  if(!large_n){
+    if(nrow(check_n) > 0){
 
-    dat_to_plot <- dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
-                                                              'not outlier', anomaly_yn))
+      dat_to_plot <- dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
+                                                                'not outlier', anomaly_yn))
 
-    plt<-ggplot(dat_to_plot,
-                aes(x=site, y=specialty_name, text=text, color=prop))+
-      geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
-      geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
-                             aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
-      scale_color_squba(palette = 'diverging', discrete = FALSE) +
-      scale_shape_manual(values=c(19,8))+
-      scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
-      theme_minimal() +
-      #theme(axis.text.x = element_text(angle=60)) +
-      labs(y = "Specialty",
-           x = 'Site',
-           size="",
-           title=paste0('Anomalous Proportion of Visits per ', title, ' by Site')) +
-      guides(color = guide_colorbar(title = 'Proportion'),
-             shape = guide_legend(title = 'Anomaly'),
-             size = 'none')
+      plt<-ggplot(dat_to_plot,
+                  aes(x=site, y=specialty_name, text=text, color=prop))+
+        geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
+        geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier'),
+                               aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
+        scale_color_squba(palette = 'diverging', discrete = FALSE) +
+        scale_shape_manual(values=c(19,8))+
+        scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
+        theme_minimal() +
+        #theme(axis.text.x = element_text(angle=60)) +
+        labs(y = "Specialty",
+             x = 'Site',
+             size="",
+             title=paste0('Anomalous Proportion of Visits per ', title, ' by Site')) +
+        guides(color = guide_colorbar(title = 'Proportion'),
+               shape = guide_legend(title = 'Anomaly'),
+               size = 'none')
 
-    plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
-                                'tooltip' = TRUE)
+      plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                  'tooltip' = TRUE)
 
-    return(plt)
+      return(plt)
 
+    }else{
+
+      plt <- ggplot(dat_to_plot, aes(x = site, y = specialty_name, fill = prop,
+                                     tooltip = text)) +
+        geom_tile_interactive() +
+        theme_minimal() +
+        scale_fill_squba(discrete = FALSE, palette = 'diverging') +
+        labs(y = 'Specialty',
+             x = 'Site',
+             fill = 'Proportion')
+
+      # Test Site Score using SD Computation
+      test_site_score <- process_output %>%
+        mutate(dist_mean = (prop - mean_val)^2) %>%
+        group_by(site) %>%
+        summarise(n_grp = n(),
+                  dist_mean_sum = sum(dist_mean),
+                  overall_sd = sqrt(dist_mean_sum / n_grp)) %>%
+        mutate(tooltip = paste0('Site: ', site,
+                                '\nStandard Deviation: ', round(overall_sd, 3)))
+
+      ylim_max <- test_site_score %>% filter(overall_sd == max(overall_sd)) %>% pull(overall_sd) + 1
+      ylim_min <- test_site_score %>% filter(overall_sd == min(overall_sd)) %>% pull(overall_sd) - 1
+
+      g2 <- ggplot(test_site_score, aes(y = overall_sd, x = site, color = site,
+                                        tooltip = tooltip)) +
+        geom_point_interactive(show.legend = FALSE) +
+        theme_minimal() +
+        scale_color_squba() +
+        geom_hline(yintercept = 0, linetype = 'solid') +
+        labs(title = 'Average Standard Deviation per Site',
+             y = 'Average Standard Deviation',
+             x = 'Site')
+
+      plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                  'tooltip' = TRUE)
+      g2[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
+                                 'tooltip' = TRUE)
+
+      opt <- list(plt,
+                  g2)
+
+      return(opt)
+    }
   }else{
+    suppressWarnings(
+      far_site <- process_output %>%
+        # filter(anomaly_yn != 'no outlier in group') %>%
+        mutate(zscr = (prop - mean_val) / sd_val,
+               zscr = ifelse(is.nan(zscr), NA, zscr),
+               zscr = abs(zscr)) %>%
+        group_by(specialty_name) %>%
+        filter(zscr == max(zscr, na.rm = TRUE)) %>%
+        summarise(farthest_site = site,
+                  nvar = n())
 
-    plt <- ggplot(dat_to_plot, aes(x = site, y = specialty_name, fill = prop,
-                                   tooltip = text)) +
-      geom_tile_interactive() +
-      theme_minimal() +
-      scale_fill_squba(discrete = FALSE, palette = 'diverging') +
-      labs(y = 'Specialty',
-           x = 'Site',
-           fill = 'Proportion')
+    )
 
-    # Test Site Score using SD Computation
-    test_site_score <- process_output %>%
-      mutate(dist_mean = (prop - mean_val)^2) %>%
-      group_by(site) %>%
-      summarise(n_grp = n(),
-                dist_mean_sum = sum(dist_mean),
-                overall_sd = sqrt(dist_mean_sum / n_grp)) %>%
-      mutate(tooltip = paste0('Site: ', site,
-                              '\nStandard Deviation: ', round(overall_sd, 3)))
+    if(any(far_site$nvar > 1)){
+      far_site <- far_site %>%
+        summarise_all(toString) %>% select(-nvar)
+    }else{
+      far_site <- far_site %>% select(-nvar)
+    }
 
-    ylim_max <- test_site_score %>% filter(overall_sd == max(overall_sd)) %>% pull(overall_sd) + 1
-    ylim_min <- test_site_score %>% filter(overall_sd == min(overall_sd)) %>% pull(overall_sd) - 1
+    suppressWarnings(
+      close_site <- process_output %>%
+        # filter(anomaly_yn != 'no outlier in group') %>%
+        mutate(zscr = (prop - mean_val) / sd_val,
+               zscr = ifelse(is.nan(zscr), NA, zscr),
+               zscr = abs(zscr)) %>%
+        group_by(specialty_name) %>%
+        filter(zscr == min(zscr, na.rm = TRUE)) %>%
+        summarise(closest_site = site,
+                  nvar = n())
+    )
 
-    g2 <- ggplot(test_site_score, aes(y = overall_sd, x = site, color = site,
-                                      tooltip = tooltip)) +
-      geom_point_interactive(show.legend = FALSE) +
-      theme_minimal() +
-      scale_color_squba() +
-      geom_hline(yintercept = 0, linetype = 'solid') +
-      labs(title = 'Average Standard Deviation per Site',
-           y = 'Average Standard Deviation',
-           x = 'Site')
+    if(any(close_site$nvar > 1)){
+      close_site <- close_site %>%
+        summarise_all(toString) %>% select(-nvar)
+    }else{
+      close_site <- close_site %>% select(-nvar)
+    }
 
-    plt[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
-                                'tooltip' = TRUE)
-    g2[["metadata"]] <- tibble('pkg_backend' = 'ggiraph',
-                               'tooltip' = TRUE)
+    nsite_anom <- process_output %>%
+      group_by(specialty_name, anomaly_yn) %>%
+      summarise(site_w_anom = n_distinct(site)) %>%
+      filter(anomaly_yn == 'outlier') %>%
+      ungroup() %>%
+      select(-anomaly_yn)
 
-    opt <- list(plt,
-                g2)
+    sitesanoms <- process_output %>%
+      filter(anomaly_yn == 'outlier') %>%
+      group_by(specialty_name) %>%
+      summarise(site_anoms = toString(site)) %>%
+      select(specialty_name, site_anoms)
 
-    return(opt)
+    tbl <- process_output %>%
+      group_by(specialty_name) %>%
+      mutate(iqr_val = stats::IQR(prop)) %>%
+      ungroup() %>%
+      distinct(specialty_name, mean_val, sd_val, median_val, iqr_val) %>%
+      left_join(nsite_anom) %>%
+      left_join(sitesanoms) %>%
+      left_join(far_site) %>%
+      left_join(close_site) %>%
+      mutate(delim = sub("^([^,]+,){5}([^,]+).*", "\\2", site_anoms),
+             site_anoms = ifelse(site_w_anom > 5,
+                                 stringr::str_replace(site_anoms, paste0(",", delim, '(.*)'), ' . . .'),
+                                 site_anoms)) %>%
+      select(-delim) %>%
+      gt::gt() %>%
+      tab_header('Large N Anomaly Detection Summary Table') %>%
+      cols_label(specialty_name = 'Specialty',
+                 site_anoms = 'Site(s) with Anomaly',
+                 mean_val = 'Mean',
+                 sd_val = 'Standard Deviation',
+                 median_val = 'Median',
+                 iqr_val = 'IQR',
+                 site_w_anom = 'No. Sites w/ Anomaly',
+                 farthest_site = 'Site(s) Farthest from Mean',
+                 closest_site = 'Site(s) Closest to Mean') %>%
+      sub_missing(missing_text = 0,
+                  columns = site_w_anom) %>%
+      sub_missing(missing_text = '--',
+                  columns = c(farthest_site, closest_site, site_anoms)) %>%
+      fmt_number(columns = c(mean_val, median_val, sd_val, iqr_val),
+                 decimals = 3) %>%
+      opt_stylize(style = 2)
+
+    if(!is.null(large_n_sites)){
+      dat_to_plot <- dat_to_plot %>% mutate(anomaly_yn = ifelse(anomaly_yn == 'no outlier in group',
+                                                                'not outlier', anomaly_yn))
+
+      plt<-ggplot(dat_to_plot %>% filter(site %in% large_n_sites),
+                  aes(x=site, y=specialty_name, text=text, color=prop))+
+        geom_point_interactive(aes(size=mean_val,shape=anomaly_yn, tooltip = text))+
+        geom_point_interactive(data = dat_to_plot %>% filter(anomaly_yn == 'not outlier',
+                                                             site %in% large_n_sites),
+                               aes(size=mean_val,shape=anomaly_yn, tooltip = text), shape = 1, color = 'black')+
+        scale_color_squba(palette = 'diverging', discrete = FALSE) +
+        scale_shape_manual(values=c(19,8))+
+        scale_y_discrete(labels = function(x) str_wrap(x, width = text_wrapping_char)) +
+        theme_minimal() +
+        labs(y = "Specialty",
+             size="",
+             title=paste0('Anomalous Proportion of Visits per ', title, ' by Site'),
+             subtitle = 'Dot size is the mean proportion per specialty') +
+        guides(color = guide_colorbar(title = 'Proportion'),
+               shape = guide_legend(title = 'Anomaly'),
+               size = 'none')
+
+      plt[['metadata']] <- tibble('pkg_backend' = 'ggiraph',
+                                  'tooltip' = TRUE)
+
+      opt <- list(plt,
+                  tbl)
+
+      return(opt)
+    }else{
+      return(tbl)
+    }
   }
 }

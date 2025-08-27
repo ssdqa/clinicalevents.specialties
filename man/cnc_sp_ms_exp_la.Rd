@@ -8,12 +8,17 @@ Function to produce output for clinical event concordance with specialty
 for multi site, exploratory, across time
 }}
 \usage{
-cnc_sp_ms_exp_la(data_tbl, facet = NULL)
+cnc_sp_ms_exp_la(data_tbl, facet = NULL, large_n = FALSE, large_n_sites = NULL)
 }
 \arguments{
 \item{data_tbl}{table which must contain the cols: time_start | codeset_name | specialty_name | site}
 
 \item{facet}{if supplied, variable to facet the plot by}
+
+\item{large_n}{a boolean indicating whether the large N visualization, intended for a high
+volume of sites, should be used; defaults to FALSE}
+
+\item{large_n_sites}{a vector of site names that can optionally generate a filtered visualization}
 }
 \value{
 line plot, with time on x axis, proportion on y, line color determined by site

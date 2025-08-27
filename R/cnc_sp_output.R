@@ -18,6 +18,9 @@
 #' @param n_mad *integer* | number of MAD from the median for which to flag anomalies
 #'              defaults to 3
 #' @param p_value *numeric* | the p value to be used as a threshold in the multi-site anomaly detection analysis
+#' @param large_n *boolean* | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
+#'                volume of sites, should be used; defaults to FALSE
+#' @param large_n_sites *vector* | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization
 #'
 #' @return the corresponding visualization/s for the site level (multi/single), time dimension,
 #'         and analysis level (exploratory/anomaly detection) specified
@@ -32,7 +35,9 @@ cnc_sp_output <- function(cnc_sp_process_output,
                           top_n=15,
                           n_mad=3L,
                           specialty_filter=NULL,
-                          p_value=0.9){
+                          p_value=0.9,
+                          large_n = FALSE,
+                          large_n_sites = NULL){
 
   # extract output function
   output_function <- cnc_sp_process_output %>% collect() %>% distinct(output_function) %>% pull()
@@ -210,7 +215,9 @@ cnc_sp_output <- function(cnc_sp_process_output,
 
       facet_vars <- facet_vars %>% append(c('specialty_name')) %>% unique()
       conc_output_plot <- cnc_sp_ms_exp_la(data_tbl=conc_output_pp,
-                                           facet=facet_vars)
+                                           facet=facet_vars,
+                                           large_n = large_n,
+                                           large_n_sites = large_n_sites)
     }else{
       # not over time
       conc_output_pp <- insert_top_n_indicator(dat=conc_output_pp,
@@ -220,7 +227,9 @@ cnc_sp_output <- function(cnc_sp_process_output,
         filter(top_n_indicator)
 
       conc_output_plot <- cnc_sp_ms_exp_cs(data_tbl=conc_output_pp,
-                                           facet = facet_vars)
+                                           facet = facet_vars,
+                                           large_n = large_n,
+                                           large_n_sites = large_n_sites)
     }
     ## MULTI SITE, ANOMALY
   }else if(multi_or_single_site=='multi'&anomaly_or_exploratory=='anomaly'){
@@ -229,12 +238,16 @@ cnc_sp_output <- function(cnc_sp_process_output,
       conc_output_plot <- cnc_sp_ms_anom_la(process_output=conc_output_pp,
                                             grp_vars=c('specialty_name', 'time_start',
                                                         'mean_allsiteprop'),
-                                            specialty_filter=specialty_filter)
+                                            specialty_filter=specialty_filter,
+                                            large_n = large_n,
+                                            large_n_sites = large_n_sites)
 
     }else{
       # not over time
       conc_output_plot <- cnc_sp_ms_anom_cs(process_output=conc_output_pp,
-                                            title="Specialty")
+                                            title="Specialty",
+                                            large_n = large_n,
+                                            large_n_sites = large_n_sites)
     }
 
   }
