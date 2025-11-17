@@ -23,7 +23,9 @@ The tabular output (with visit-based counts per specialty) produced by \code{cnc
 
 \item{cnc_sp_process_names}{\emph{tabular input} || \strong{required}
 
-The tabular output (with specialty names & any specialty_name grouping categories) produced by \code{cnc_sp_process}}
+The tabular output (with specialty names & any specialty_name grouping categories) produced by \code{cnc_sp_process}
+
+To see an example of what this file should look like, see \code{?clinicalevents.specialties::cnc_sp_specialty_names}}
 
 \item{facet_vars}{\emph{string or vector} || defaults to \code{NULL}
 

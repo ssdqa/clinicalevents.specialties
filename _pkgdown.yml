@@ -1,0 +1,28 @@
+url: https://ssdqa.github.io/clinicalevents.specialties/
+template:
+  bootstrap: 5
+  light-switch: true
+navbar:
+  left:
+  - text: 'squba Home'
+    href: https://ssdqa.github.io/squba/
+  - text: 'Reference'
+    href: reference/index.html
+  - text: 'Articles'
+    href: articles/index.html
+    menu:
+    - text: 'Multi-Site Analysis for Independent Data Sources'
+      href: articles/multisite_independent.html
+  - text: 'PEDSpace'
+    href: https://hdl.handle.net/20.500.14642/25
+reference:
+- title: 'Module Execution'
+  contents:
+  - cnc_sp_process
+  - cnc_sp_output
+- title: 'Sample Input'
+  contents:
+  - cnc_sp_codeset_file
+  - cnc_sp_visit_file_omop
+  - cnc_sp_visit_file_pcornet
+  - cnc_sp_specialty_names

@@ -14,6 +14,8 @@
 #'
 #'   The tabular output (with specialty names & any specialty_name grouping categories) produced by `cnc_sp_process`
 #'
+#'   To see an example of what this file should look like, see `?clinicalevents.specialties::cnc_sp_specialty_names`
+#'
 #' @param facet_vars *string or vector* || defaults to `NULL`
 #'
 #'   A string or vector representing the variables by which the plot should be facet.
