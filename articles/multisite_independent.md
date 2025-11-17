@@ -1,0 +1,57 @@
+# Multi-Site Analysis for Independent Data Sources
+
+The multi-site analyses included in this suite are intended to be
+executed against data that are all stored in the same place. However,
+there may be some instances where the data associated with each site is
+stored in independent locations. This vignette outlines how the
+multi-site analysis can be executed in these instances.
+
+All multi-site analyses, regardless of the check type, can reproduced in
+the same way.
+
+First, execute either of the **Single Site, Exploratory** analyses,
+configured appropriately for your study, against each data source.
+
+``` r
+library(clinicalevents.specialties)
+
+my_table <- cnc_sp_process(cohort = my_cohort,
+                           multi_or_single_site = 'single',
+                           anomaly_or_exploratory = 'exploratory',
+                           time = T / F,
+                           ...)
+```
+
+Then, combine both the results with visit counts AND the specialty type
+results (for labeling) into a single table with the different sites
+delineated in the `site` column.
+
+``` r
+my_final_counts <- my_table1[[2]] %>% dplyr::union(my_table2[[2]]) ... %>%
+  dplyr::union(my_table_n[[2]])
+
+my_final_specialties <- my_table1[[1]] %>% dplyr::union(my_table2[[1]]) ... %>%
+  dplyr::union(my_table_n[[1]])
+```
+
+Once you have the combined table of counts, you will want to replace the
+`output_function` column to reflect the Multi-Site check type you would
+like to execute. Choose from the table below:
+
+| Check Type                                     | output_function   |
+|:-----------------------------------------------|:------------------|
+| Multi Site, Exploratory, Cross-Sectional       | cnc_sp_ms_exp_cs  |
+| Multi Site, Exploratory, Longitudinal          | cnc_sp_ms_exp_la  |
+| Multi Site, Anomaly Detection, Cross-Sectional | cnc_sp_ms_anom_cs |
+| Multi Site, Anomaly Detection, Longitudinal    | cnc_sp_ms_anom_la |
+
+After this adjustment has been made, the combined & edited table with
+counts + the combined specialty reference can both be fed into the
+output function as usual.
+
+``` r
+
+my_graph <- cnc_sp_output(cnc_sp_process_output = my_edited_table,
+                          cnc_sp_process_names = my_named_specialties,
+                          ...)
+```

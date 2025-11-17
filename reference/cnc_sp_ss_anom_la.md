@@ -1,0 +1,68 @@
+# *Single Site, Anomaly, Longitudinal*
+
+Control chart looking at proportion of visits with specialty over time
+and a reference table
+
+## Usage
+
+``` r
+cnc_sp_ss_anom_la(
+  process_output,
+  filt_list = NULL,
+  ct_col,
+  denom_col,
+  id_col,
+  name_col,
+  facet = NULL,
+  plot_title_text
+)
+```
+
+## Arguments
+
+- process_output:
+
+  dataframe output by the corresponding squba check
+
+- filt_list:
+
+  a named list with names equal to the column name/s that must exist in
+  the `process_output` and values equal to the values on which to filter
+  e.g. filt_list=list(concepts=c(first_concept, second_concept),
+  another_column_name=c('some_value_found_in_another_column_name'))
+
+- ct_col:
+
+  a numeric column with counts associated with the variable of interest
+
+- denom_col:
+
+  a numeric column with counts to be summed across time to provide an
+  overall summary count
+
+- id_col:
+
+  the primary identifier for variables in the table (i.e.
+  specialty_name)
+
+- name_col:
+
+  column with descriptive names for the id_col
+
+- facet:
+
+  the variables by which you would like to facet the graph; defaults to
+  NULL
+
+- plot_title_text:
+
+  text to display as the plot title. Will be tacked on to the text
+  'Control Chart: '
+
+## Value
+
+if time_increment is year, outputs a list where: the first element is a
+P prime control chart that highlights points in time that are anomalous
+the second element is a gt table with the total counts based on the
+specified stratification otherwise, outputs a list with a plot_anomalies
+& plot_anomalies_decomp graph from the timetk package

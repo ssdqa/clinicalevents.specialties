@@ -1,0 +1,43 @@
+# Clinical Events & Specialties
+
+The Clinical Events & Specialties module identifies specialties
+associated with a user-provided clinical event (ex: an asthma diagnosis)
+and evaluates the distribution of specialties associated with said event
+at the encounter level. This functionality allows users to evaluate the
+care patterns associated with a given cohort and determine if they are
+expected.
+
+## Installation
+
+You can install the development version of this package like so:
+
+``` r
+devtools::install_github('ssdqa/clinicalevents.specialties')
+```
+
+# Package index
+
+## Module Execution
+
+- [`cnc_sp_process()`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_process.md)
+  : Clinical Events and Specialties
+- [`cnc_sp_output()`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_output.md)
+  : Clinical Events and Specialties – Output Generation
+
+## Sample Input
+
+- [`cnc_sp_codeset_file`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_codeset_file.md)
+  : Clinical Events & Specialties Codeset File Sample
+- [`cnc_sp_visit_file_omop`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_visit_file_omop.md)
+  : Clinical Events & Specialties Visit File Sample – OMOP version
+- [`cnc_sp_visit_file_pcornet`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_visit_file_pcornet.md)
+  : Clinical Events & Specialties Visit File Sample – PCORnet version
+- [`cnc_sp_specialty_names`](https://ssdqa.github.io/clinicalevents.specialties/reference/cnc_sp_specialty_names.md)
+  : Clinical Events & Specialties - Specialty Naming Sample
+
+# Articles
+
+### All vignettes
+
+- [Multi-Site Analysis for Independent Data
+  Sources](https://ssdqa.github.io/clinicalevents.specialties/articles/multisite_independent.md):
