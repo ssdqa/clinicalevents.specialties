@@ -123,7 +123,8 @@ cnc_sp_process_example <- cnc_sp_process(cohort = cohort,
                                          anomaly_or_exploratory = 'exploratory',
                                          codeset_tbl = cnc_sp_concept_tbl,
                                          visit_type_tbl = cnc_sp_visit_tbl,
-                                         time = FALSE)
+                                         time = FALSE) \%>\%
+  suppressMessages()
 
 cnc_sp_process_example$cnc_sp_process_output
 cnc_sp_process_example$cnc_sp_process_names
@@ -135,7 +136,8 @@ cnc_sp_output_example <-
                 cnc_sp_process_names =
                   cnc_sp_process_example$cnc_sp_process_names \%>\%
                     dplyr::mutate(specialty_name = 'General Pediatrics'),
-                facet_vars = c('visit_type'))
+                facet_vars = c('visit_type')) \%>\%
+  suppressMessages()
 
 cnc_sp_output_example
 
