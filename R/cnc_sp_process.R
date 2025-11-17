@@ -7,65 +7,116 @@
 #' (with user-provided groupings in `visit_type_tbl`), cluster
 #' (an additional column added to `codeset_tbl` with subgroupings), or time
 #'
-#' @param cohort *tabular input* | A dataframe with the cohort of patients for your study. Should include the columns:
-#' - `site` | *character*
-#' - `person_id` / `patid` | *integer* / *character*
-#' - `start_date` | *date*
-#' - `end_date` | *date*
-#' @param multi_or_single_site *string* | Option to run the function on a single vs multiple sites
-#'                      - `single`: run on a single site, or treat all of the sites as one
-#'                      - `multi`: run on a group of sites, treating each site separately
-#' @param anomaly_or_exploratory *string* | string indicating whether to generate output for anomaly detection or exploratory analysis:
-#'                          - `anomaly` for anomaly detection
-#'                          - `exploratory` for exploratory analysis
-#' @param omop_or_pcornet *string* | Option to run the function using the OMOP or PCORnet CDM as the default CDM
-#' - `omop`: run the [cnc_sp_process_omop()] function against an OMOP CDM instance
-#' - `pcornet`: run the [cnc_sp_process_pcornet()] function against a PCORnet CDM instance
-#' @param age_groups *tabular input* | If you would like to stratify the results by age group,  create a table or CSV file with the following
-#'                   columns and include it as the `age_groups` function parameter:
-#' - `min_age` | *integer* | the minimum age for the group (i.e. 10)
-#' - `max_age` | *integer* | the maximum age for the group (i.e. 20)
-#' - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
+#' @param cohort *tabular input* || **required**
 #'
-#' If you would *not* like to stratify by age group, leave the argument as NULL
-#' @param codeset_tbl *tabular input* | table in the specs directory with the columns:
-#' - `domain` | *character* | name of the domain
-#' - `domain_tbl` | *character* | name of the cdm_tbl
-#' - `concept_field` | *character* | column name in the domain_tbl for which to search the codeset concept_ids
-#' - `date_field` | *character* | column name in the domain_tbl to be used for time-based filtering
-#' - `codeset_name` | *character* | name of a codeset that exists as a csv file in the specs directory.
+#'   The cohort to be used for data quality testing. This table should contain,
+#'   at minimum:
+#'   - `site` | *character* | the name(s) of institutions included in your cohort
+#'   - `person_id` / `patid` | *integer* / *character* | the patient identifier
+#'   - `start_date` | *date* | the start of the cohort period
+#'   - `end_date` | *date* | the end of the cohort period
 #'
-#' The codeset can optionally contain a `cluster` column specifying subgroups of the codeset,
-#' and if so, the results will be stratified by cluster
+#'   Note that the start and end dates included in this table will be used to
+#'   limit the search window for the analyses in this module.
 #'
-#' @param care_site *boolean* | TRUE if want to look at care_site specialty
-#'                  (specialty_concept_id in the care_site table / facility_type in the encounter table)
-#'                  FALSE if do not want to look at care_site specialty
-#' @param provider *boolean* | TRUE if want to look at provider specialty
-#'                  (specialty_concept_id / provider_specialty_primary in the provider table)
-#'                  FALSE if do not want to look at provider specialty
-#'                  IF both `provider` and `care_site` are both TRUE,
-#'                  provider specialty will be prioritized if provider and care_site are discordant for the visit
-#' @param visit_detail *boolean* | OMOP ONLY -- TRUE if want to use the visit_detail table to identify specialty visits
-#'                     FALSE if want to use visit_occurrence table (default)
-#' @param visit_type_tbl *tabular input* | a table that defines available visit types that are called in `visit_types.` defaults to the provided
-#'                       `cnc_sp_visit_file_(omop/pcornet)` file, which contains the following fields:
-#' - `visit_concept_id` / `visit_detail_concept_id` or `enc_type`: the visit_(detail)_concept_id or enc_type that represents the visit type of interest (i.e. 9201 or IP)
-#' - `visit_type`: the string label to describe the visit type; this label can be used multiple times
-#'                 within the file if multiple visit_concept_ids/enc_types represent the visit type
-#' @param time *boolean* | TRUE if results should be over time. Defaults to FALSE
-#' @param time_span *vector - length 2* | if time=TRUE, vector containing minimum and maximum dates over which to measure
-#' @param time_period *string* | if time=TRUE, indicates time period (e.g. 'year', 'month') over which to measure
-#' @param vocab_tbl *tabular input* | location of vocabulary table containing concept_id to concept_name mapping. If a vocabulary table is not available, will default to NULL
-#' @return 2 tables:
-#'            1 table containing all of the specialties in the results of the
-#'            DQ check, with the columns:
-#'                  - `specialty_concept_id`: an identifier for the specialty based on the data model
-#'                  - `specialty_concept_name`: if a `vocab_tbl` is provided, the name of the specialty
-#'                    that corresponds to each specialty_concept_id. If no `vocab_tbl` is provided,
-#'                    defaults to 'No vocabulary table input'
-#'            1 table containing counts of visits, optionally stratified by visit and/or time period,
-#'            with each specialty for the visits meeting criteria (i.e. those with the clinical fact provided)
+#' @param multi_or_single_site *string* || defaults to `single`
+#'
+#'   A string, either `single` or `multi`, indicating whether a single-site or
+#'   multi-site analysis should be executed
+#'
+#' @param anomaly_or_exploratory *string* || defaults to `exploratory`
+#'
+#'   A string, either `anomaly` or `exploratory`, indicating what type of results
+#'   should be produced.
+#'
+#'   Exploratory analyses give a high level summary of the data to examine the
+#'   fact representation within the cohort. Anomaly detection analyses are
+#'   specialized to identify outliers within the cohort.
+#'
+#' @param omop_or_pcornet *string* || **required**
+#'
+#'   A string, either `omop` or `pcornet`, indicating the CDM format of the data
+#'
+#'    - `omop`: run the [cnc_sp_process_omop()] function against an OMOP CDM instance
+#'    - `pcornet`: run the [cnc_sp_process_pcornet()] function against a PCORnet CDM instance
+#'
+#' @param age_groups *tabular input* || defaults to `NULL`
+#'
+#'   If you would like to stratify the results by age group, create a table or
+#'   CSV file with the following columns and use it as input to this parameter:
+#'
+#'   - `min_age` | *integer* | the minimum age for the group (i.e. 10)
+#'   - `max_age` | *integer* | the maximum age for the group (i.e. 20)
+#'   - `group` | *character* | a string label for the group (i.e. 10-20, Young Adult, etc.)
+#'
+#'   If you would *not* like to stratify by age group, leave as `NULL`
+#'
+#' @param codeset_tbl *tabular input* || **required**
+#'
+#'   A table defining the clinical event of interest, containing the following:
+#'   - `domain` | *character* | a string label for the domain where the event is defined
+#'   - `domain_tbl` | *character* | the name of the CDM table where the event is defined
+#'   - `concept_field` | *character* | the string name of the field in the domain table where the concepts are located
+#'   - `date_field` | *character* | the name of the field in the domain table with the date that should be used for temporal filtering
+#'   - `codeset_name` | *character* | name of the codeset with concepts defining the clinical event
+#'
+#'   The codeset file identified by this table can optionally contain a `cluster` column
+#'   specifying subgroups of the codeset, and if so, the results will be stratified by cluster
+#'
+#'   To see an example of the structure of this file, see `?clinicalevents.specialties::cnc_sp_codeset_file`
+#'
+#' @param care_site *boolean* || defaults to `FALSE`
+#'
+#'   A boolean indicating whether care site/facility specialty values should be included
+#'   in the analysis. If both `provider` and `care_site` are TRUE, provider specialty will
+#'   be prioritized.
+#'
+#' @param provider *boolean* | defaults to `TRUE`
+#'
+#'   A boolean indicating whether care provider specialty values should be included
+#'   in the analysis. If both `provider` and `care_site` are TRUE, provider specialty will
+#'   be prioritized.
+#'
+#' @param visit_detail *boolean* || defaults to `FALSE`
+#'
+#'   For OMOP analyses only -- a boolean indicating whether the visit_detail table should
+#'   be used as the primary visit table to identify specialty visits. If left FALSE, visit_occurrence
+#'   will be used.
+#'
+#' @param visit_type_tbl *tabular input* || defaults to `NULL`
+#'
+#'   A table defining available visit types to be used as an optional stratification.
+#'   This table should contain the following field:
+#'   - `visit_concept_id` / `visit_detail_concept_id` or `enc_type` | *integer* / *character* | the visit type identifier that represents the visit type of interest (ex: 9201 or IP)
+#'   - `visit_type` | *character* | a string description of the visit type
+#'
+#'   To see an example of the structure of this file, see `?clinicalevents.specialties::cnc_sp_visit_file_omop` or
+#'   `?clinicalevents.specialties::cnc_sp_visit_file_pcornet`
+#'
+#' @param time *boolean* || defaults to `FALSE`
+#'
+#'   A boolean to indicate whether to execute a longitudinal analysis
+#'
+#' @param time_span *vector - length 2* || defaults to `c('2012-01-01', '2020-01-01')`
+#'
+#'   A vector indicating the lower and upper bounds of the time series for longitudinal analyses
+#'
+#' @param time_period *string* || defaults to `year`
+#'
+#'   A string indicating the distance between dates within the specified time_span.
+#'   Defaults to `year`, but other time periods such as `month` or `week` are
+#'   also acceptable
+#'
+#' @param vocab_tbl *tabular input* || defaults to `NULL`
+#'
+#'   A vocabulary table containing concept names that will be used to retrieve labels
+#'   for the specialty concepts (ex: the OMOP concept table)
+#'
+#' @return This function will return two dataframes:
+#' - A table containing all of the specialties associated with the clinical event, which can be further grouped by the user before feeding this into the cnc_sp_output function
+#' - A table containing counts of visits, optionally stratified by visit, cluster, and/or time period, with each specialty for the visits meeting criteria (i.e. those with the clinical fact provided)
+#'
+#' For a more detailed description of output specific to each check type, see the PEDSpace metadata repository
 #'
 #'
 #' @import argos

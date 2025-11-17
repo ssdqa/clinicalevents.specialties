@@ -27,3 +27,4 @@ at each site, with dot color representing site
 Function to produce output for clinical event concordance with specialty
 for multi site, exploratory, not over time
 }
+\keyword{internal}

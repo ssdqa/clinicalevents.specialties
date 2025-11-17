@@ -10,7 +10,7 @@
 A data frame with 2 columns
 \describe{
 \item{visit_(detail)_concept_id}{The visit_concept_id or visit_detail_concept_id as it appears in the visit_occurrence or visit_detail table}
-\item{visit_type}{A string to label the visit type of the visit_concept_id; this string is what should be referenced in the \code{visit_types} parameter}
+\item{visit_type}{A string to label the visit type of the visit_concept_id}
 }
 }
 }

@@ -21,3 +21,4 @@ across all specialties
 Function to produce output for clinical event concordance with specialty
 for single site, anomaly, not over time
 }
+\keyword{internal}

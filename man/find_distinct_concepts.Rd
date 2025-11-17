@@ -25,3 +25,4 @@ table with distinct specialty_concept_id | concept_name
 \description{
 Function to generate a table of concept_id + concept_name for a set of concepts
 }
+\keyword{internal}

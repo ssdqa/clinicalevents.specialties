@@ -1,5 +1,7 @@
 # Generate a test DB with synthetic omop data
 testdb <- NULL
+my_directory <- system.file(package = 'clinicalevents.specialties')
+my_file_folder <- system.file('extdata', package = 'clinicalevents.specialties')
 # Function to generate omop test db
 mk_testdb_omop <- function(){
   if (! is.null(testdb)) return(testdb)

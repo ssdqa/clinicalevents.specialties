@@ -92,3 +92,4 @@ and will be able to stratify results by:
 visit type (user will provide groupings)
 time
 }
+\keyword{internal}

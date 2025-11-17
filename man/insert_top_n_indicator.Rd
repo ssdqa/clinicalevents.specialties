@@ -28,3 +28,4 @@ and FALSE if not
 Function to insert a column into a table indicating whether the record is in the top n
 for the given group
 }
+\keyword{internal}

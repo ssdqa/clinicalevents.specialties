@@ -29,6 +29,9 @@ NULL
 #' @return the original `dat` table with all original columns,
 #'         plus a column `top_n_indicator` which is TRUE if the record is in the top n
 #'         and FALSE if not
+#'
+#' @keywords internal
+#'
 insert_top_n_indicator<-function(dat,
                                  gp_cols,
                                  val_col,
@@ -70,6 +73,8 @@ insert_top_n_indicator<-function(dat,
 #' @param top_n an integer indicating the top N number of specialties to display on the graph
 #'
 #' @return a bar plot based on the values of `x_var`, `y_var`, `fill_var`, `facet`
+#'
+#' @keywords internal
 #'
 cnc_sp_ss_exp_cs <- function(data_tbl,
                              facet,
@@ -118,6 +123,8 @@ cnc_sp_ss_exp_cs <- function(data_tbl,
 #'
 #' @return a dot plot of specialty against proportion of visits with that specialty
 #'         at each site, with dot color representing site
+#'
+#' @keywords internal
 #'
 cnc_sp_ms_exp_cs <- function(data_tbl,
                              facet = NULL,
@@ -196,6 +203,9 @@ cnc_sp_ms_exp_cs <- function(data_tbl,
 #'
 #' @return a plotly line plot of the proportion of visits with each specialty
 #'          against time, with line color representing specialty
+#'
+#' @keywords internal
+#'
 cnc_sp_ss_exp_la <- function(data_tbl,
                              facet=NULL){
   dat_to_plot<-data_tbl %>%
@@ -242,6 +252,9 @@ cnc_sp_ss_exp_la <- function(data_tbl,
 #'
 #' @return line plot, with time on x axis, proportion on y, line color determined by site
 #'              with a dotted line for the all-site mean
+#'
+#' @keywords internal
+#'
 cnc_sp_ms_exp_la <- function(data_tbl,
                              facet=NULL,
                              large_n = FALSE,
@@ -331,6 +344,8 @@ cnc_sp_ms_exp_la <- function(data_tbl,
 #'         for a given cluster, and the size of the dot represents the mean proportion
 #'         across all specialties
 #'
+#' @keywords internal
+#'
 cnc_sp_ss_anom_cs<- function(data_tbl,
                              facet = NULL){
 
@@ -396,6 +411,7 @@ cnc_sp_ss_anom_cs<- function(data_tbl,
 #'         otherwise, outputs a list with a plot_anomalies & plot_anomalies_decomp
 #'         graph from the timetk package
 #'
+#' @keywords internal
 #'
 cnc_sp_ss_anom_la <- function(process_output,
                               filt_list=NULL,
@@ -520,6 +536,8 @@ cnc_sp_ss_anom_la <- function(process_output,
 #'    specialty across time computation with the Euclidean distance associated with each line
 #'    3) a bar graph with the Euclidean distance value for each site, with the average
 #'    proportion as the fill
+#'
+#' @keywords internal
 #'
 cnc_sp_ms_anom_la <- function(process_output,
                               grp_vars,
@@ -690,6 +708,8 @@ cnc_sp_ms_anom_la <- function(process_output,
 #'         anomalous, the color of the dot represents the proportion of visits
 #'         for a given specialty, and the size of the dot represents the mean proportion
 #'         across all sites
+#'
+#' @keywords internal
 #'
 cnc_sp_ms_anom_cs<-function(process_output,
                             title,

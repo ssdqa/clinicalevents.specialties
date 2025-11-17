@@ -33,3 +33,4 @@ Function to produce output for clinical event concordance with specialty
 for single site, exploratory, not over time
 }
 }
+\keyword{internal}

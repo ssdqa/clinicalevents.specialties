@@ -41,3 +41,4 @@ proportion as the fill
 \strong{Multi-Site Anomaly Longitudinal}
 Function to generate output displaying the Euclidean distance between two time series
 }
+\keyword{internal}

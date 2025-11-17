@@ -7,12 +7,14 @@ conn <- mk_testdb_omop()
 
 #' Establish connection to database and generate internal configurations
 initialize_dq_session(session_name = 'cnc_sp_process_test',
-                      working_directory = getwd(),
+                      working_directory = my_directory,
                       db_conn = conn,
                       is_json = FALSE,
-                      file_subdirectory = system.file('extdata',
-                                        package = 'clinicalevents.specialties'),
+                      file_subdirectory = my_file_folder,
                       cdm_schema = NA)
+
+## Turn off SQL trace for this example
+config('db_trace', FALSE)
 
 #' Build mock study cohort
 cohort <- cdm_tbl('person') %>% dplyr::distinct(person_id) %>%

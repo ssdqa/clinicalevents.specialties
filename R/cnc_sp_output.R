@@ -6,24 +6,55 @@
 #' be adjusted by the user after the graph has been output using `+ theme()`. Most graphs can
 #' also be made interactive using `make_interactive_squba()`
 #'
-#' @param cnc_sp_process_output *tabular input* | output from the `cnc_sp_process` function
-#' @param cnc_sp_process_names *tabular input* | classified names from the output from the `cnc_sp_process` function,
-#'                              expected to minimally contain the columns:
-#'                                - specialty_concept_id: unchanged from the `cnc_sp_process` output
-#'                                - specialty_name: the assigned classification
-#'                              this table will be joined to `cnc_sp_process_output`, so all specialty_concept_id in the `conc_process_output` should be in `conc_process_names`
-#' @param facet_vars *vector* | vector of variable names to facet by
-#' @param top_n *integer* | integer value for choosing the "top n" to display per check, with meaning dependent on the context of the check
-#' @param specialty_filter *string or vector* | an optional filter to apply to the specialty_name field to narrow down results
-#' @param n_mad *integer* | number of MAD from the median for which to flag anomalies
-#'              defaults to 3
-#' @param p_value *numeric* | the p value to be used as a threshold in the multi-site anomaly detection analysis
-#' @param large_n *boolean* | for multi site analyses, a boolean indicating whether the large N visualization, intended for a high
-#'                volume of sites, should be used; defaults to FALSE
-#' @param large_n_sites *vector* | when large_n is TRUE, a vector of site names that can optionally generate a filtered visualization
+#' @param cnc_sp_process_output *tabular input* || **required**
 #'
-#' @return the corresponding visualization/s for the site level (multi/single), time dimension,
-#'         and analysis level (exploratory/anomaly detection) specified
+#'   The tabular output (with visit-based counts per specialty) produced by `cnc_sp_process`
+#'
+#' @param cnc_sp_process_names *tabular input* || **required**
+#'
+#'   The tabular output (with specialty names & any specialty_name grouping categories) produced by `cnc_sp_process`
+#'
+#' @param facet_vars *string or vector* || defaults to `NULL`
+#'
+#'   A string or vector representing the variables by which the plot should be facet.
+#'   Accepted values are `cluster` and/or `visit_type`
+#'
+#' @param top_n *integer* || defaults to `15`
+#'
+#'   An integer value indicating the cutoff for the top N of each group to display per check
+#'
+#' @param specialty_filter *string or vector* || defaults to `NULL`
+#'
+#'   An optional parameter indicating the specialty or specialties to limit to in the analysis
+#'
+#' @param n_mad *integer* || defaults to `3`
+#'
+#'   An integer indicating the number of MAD from the median that should be
+#'   considered the threshold for an anomalous value
+#'
+#' @param p_value *numeric* || defaults to `0.9`
+#'
+#'   The p value to be used as a threshold in the Multi-Site,
+#'   Anomaly Detection, Cross-Sectional analysis
+#'
+#' @param large_n *boolean* || defaults to `FALSE`
+#'
+#'   For Multi-Site analyses, a boolean indicating whether the large N
+#'   visualization, intended for a high volume of sites, should be used. This
+#'   visualization will produce high level summaries across all sites, with an
+#'   option to add specific site comparators via the `large_n_sites` parameter.
+#'
+#' @param large_n_sites *vector* || defaults to `NULL`
+#'
+#'   When `large_n = TRUE`, a vector of site names that can add site-level information
+#'   to the plot for comparison across the high level summary information.
+#'
+#' @return This function will produce a graph to visualize the results
+#'         from `cnc_sp_process` based on the parameters provided. The default
+#'         output is typically a static ggplot or gt object, but interactive
+#'         elements can be activated by passing the plot through `make_interactive_squba`.
+#'         For a more detailed description of output specific to each check type,
+#'         see the PEDSpace metadata repository
 #'
 #' @example inst/example-cnc_sp_process_output.R
 #'

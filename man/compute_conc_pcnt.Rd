@@ -52,3 +52,4 @@ num_visits: number of visits with the specialty+fact
 \description{
 Function to compute fact + visit specialty concordance
 }
+\keyword{internal}

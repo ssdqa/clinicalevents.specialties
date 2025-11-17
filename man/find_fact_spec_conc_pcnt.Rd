@@ -39,3 +39,4 @@ if visit was to a specialty in the codeset
 Function to find the visit_occurrences during which patient had a dx of interest +
 specialty of interest
 }
+\keyword{internal}

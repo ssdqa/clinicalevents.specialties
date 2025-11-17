@@ -46,3 +46,4 @@ graph from the timetk package
 Control chart looking at proportion of visits with specialty over time
 and a reference table
 }
+\keyword{internal}

@@ -28,6 +28,8 @@
 #'                        num_visits: number of visits with the specialty+fact
 #'                        ... any columns in the `grouped_list`
 #'
+#' @keywords internal
+#'
 compute_conc_omop <- function(cohort,
                               grouped_list=c('site'),
                               codeset_tbl=read_codeset("conc_codesets", col_types = 'cccc'),
@@ -154,6 +156,9 @@ compute_conc_omop <- function(cohort,
 #'
 #' @return table with all occurrences of the fact_codes for the cohort, and visit info only
 #'         if visit was to a specialty in the codeset
+#'
+#' @keywords internal
+#'
 find_fact_spec_conc_omop <- function(cohort,
                                      visit_id,
                                      fact_codes,
@@ -280,6 +285,8 @@ find_fact_spec_conc_omop <- function(cohort,
 #' @return table with distinct specialty_concept_id | concept_name
 #'
 #' @importFrom purrr set_names
+#'
+#' @keywords internal
 #'
 find_distinct_concepts <- function(tbl,
                                    concept_col = 'concept_id',

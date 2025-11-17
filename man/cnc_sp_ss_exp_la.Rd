@@ -22,3 +22,4 @@ against time, with line color representing specialty
 Function to produce output for clinical event concordance with specialty
 for single site, exploratory, across time
 }
+\keyword{internal}

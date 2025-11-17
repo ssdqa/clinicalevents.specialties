@@ -50,7 +50,7 @@
 #'            1 table containing counts of visits, optionally stratified by visit and/or time period,
 #'            with each specialty for the visits meeting criteria (i.e. those with the clinical fact provided)
 #'
-#'
+#' @keywords internal
 #'
 cnc_sp_process_pcornet <- function(cohort,
                                    multi_or_single_site='multi',
