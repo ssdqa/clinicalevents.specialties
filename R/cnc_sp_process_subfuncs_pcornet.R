@@ -161,7 +161,7 @@ find_fact_spec_conc_pcnt <- function(cohort,
                       concept_code, concept_name,
                       vocabulary_id,
                       category, cluster), by = join_cols) %>%
-    compute_new(temporary=TRUE)
+    compute_new()
 
   message('Finding specialties')
   if(time){
@@ -227,7 +227,7 @@ find_fact_spec_conc_pcnt <- function(cohort,
       spec_full,
       fact_occurrences
     ) %>%
-    compute_new(temporary = TRUE)
+    compute_new()
 
 
   return(spec_final)

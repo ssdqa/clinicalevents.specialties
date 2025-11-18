@@ -179,7 +179,7 @@ find_fact_spec_conc_omop <- function(cohort,
     inner_join(select(fact_codes,
                       concept_id, concept_name,
                       category, cluster)) %>%
-    compute_new(temporary=TRUE)
+    compute_new()
 
   message('Finding specialties')
   if(time){
@@ -267,7 +267,7 @@ find_fact_spec_conc_omop <- function(cohort,
       spec_full,
       fact_occurrences
     ) %>%
-    compute_new(temporary = TRUE)
+    compute_new()
 
 
   return(spec_final)
