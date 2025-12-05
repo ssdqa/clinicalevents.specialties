@@ -74,7 +74,7 @@ cnc_sp_process_pcornet <- function(cohort,
   site_list_adj <- site_filter$site_list_adj
 
   ## Step 1: Prepare cohort
-  cohort_prep <- prepare_cohort(cohort_tbl = cohort_filter, age_groups = NULL, codeset = NULL,
+  cohort_prep <- prepare_cohort(cohort_tbl = cohort_filter, age_groups = NULL,
                                 omop_or_pcornet = 'pcornet')
 
   ## Include age groups, if desired
